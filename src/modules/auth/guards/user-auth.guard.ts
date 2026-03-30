@@ -1,12 +1,12 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { User } from '../../database/entities';
 
 @Injectable()
 export class UserAuthGuard implements CanActivate {
-  constructor(@InjectRepository(User) private readonly userRepository: Repository<User>) {}
+  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const gqlCtx = GqlExecutionContext.create(context);
@@ -16,7 +16,7 @@ export class UserAuthGuard implements CanActivate {
       throw new UnauthorizedException('Missing x-user-id header');
     }
 
-    const user = await this.userRepository.findOne({
+    const user = await this.dataSource.getRepository(User).findOne({
       where: { id: userId, isActive: true },
       relations: { role: { permissions: true } },
     });
