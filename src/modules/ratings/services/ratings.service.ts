@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, Repository } from 'typeorm';
 import { AuditAction, EmailStatus, EmailType } from '../../../common/enums';
 import {
   AggregatedRating,
@@ -60,7 +60,7 @@ export class RatingsService {
     const ratedUser = await this.userRepository.findOne({ where: { id: input.ratedUserId } });
     if (!ratedUser) throw new BadRequestException('Rated user does not exist');
 
-    const questions = await this.questionRepository.findBy({ id: input.answers.map((answer) => answer.questionId) });
+    const questions = await this.questionRepository.findBy({ id: In(input.answers.map((answer) => answer.questionId)) });
     if (questions.length !== input.answers.length) throw new BadRequestException('Invalid question IDs');
 
     const expectedRole = ratedUser.roleId;

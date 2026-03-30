@@ -19,7 +19,7 @@ export class RbacGuard implements CanActivate {
 
     const gqlCtx = GqlExecutionContext.create(context);
     const request = gqlCtx.getContext().req;
-    const permissions = request.user?.role?.permissions?.map((p) => p.permission) ?? [];
+    const permissions = request.user?.role?.permissions?.map((p: any) => p.permission) ?? [];
     const hasPermissions = requiredPermissions.every((permission) => permissions.includes(permission));
 
     if (!hasPermissions) {

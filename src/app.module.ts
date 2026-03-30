@@ -30,6 +30,17 @@ import { EmailModule } from './modules/email/email.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { RbacModule } from './modules/rbac/rbac.module';
 import { UsersModule } from './modules/users/users.module';
+import { ConfigModule } from '@nestjs/config';
+
+export class AppModule {}
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+  ],
+})
 
 @Module({
   imports: [
@@ -64,7 +75,7 @@ import { UsersModule } from './modules/users/users.module';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-      context: ({ req }) => ({ req }),
+      context: ({ req }: any) => ({ req }),
       sortSchema: true,
     }),
     AuthModule,
