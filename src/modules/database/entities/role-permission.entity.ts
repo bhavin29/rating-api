@@ -10,7 +10,7 @@ export class RolePermission {
   id: string;
 
   @Field()
-  @Column()
+  @Column({ name: 'permission_key' })
   permission: string;
 
   @ManyToOne(() => Role, (role) => role.permissions, { onDelete: 'CASCADE' })

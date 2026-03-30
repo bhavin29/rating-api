@@ -14,7 +14,7 @@ export class ProjectsService {
   ) {}
 
   getProjects(): Promise<Project[]> {
-    return this.projectRepository.find({ order: { createdAt: 'DESC' } });
+    return this.projectRepository.find({ order: { id: 'DESC' } });
   }
 
   async createProject(input: CreateProjectInput, actorId: string): Promise<Project> {

@@ -29,9 +29,9 @@ type Mutation {
 }
 
 type Project {
-  description: String
   id: ID!
   name: String!
+  status: String
 }
 
 type Query {

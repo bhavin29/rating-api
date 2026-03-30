@@ -1,5 +1,5 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { ProjectMember } from './project-member.entity';
 import { Sprint } from './sprint.entity';
 
@@ -16,14 +16,11 @@ export class Project {
 
   @Field({ nullable: true })
   @Column({ nullable: true })
-  description?: string;
+  status?: string;
 
   @OneToMany(() => ProjectMember, (member) => member.project)
   members: ProjectMember[];
 
   @OneToMany(() => Sprint, (sprint) => sprint.project)
   sprints: Sprint[];
-
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
 }

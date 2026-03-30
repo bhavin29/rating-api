@@ -1,7 +1,6 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 import {
   Column,
-  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -28,10 +27,10 @@ export class User {
   email: string;
 
   @Field()
-  @Column({ name: 'full_name' })
+  @Column({ name: 'name' })
   fullName: string;
 
-  @Column({ default: true })
+  @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
   @Field(() => Role)
@@ -62,7 +61,4 @@ export class User {
 
   @OneToMany(() => SecureToken, (token) => token.user)
   secureTokens: SecureToken[];
-
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
 }
