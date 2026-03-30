@@ -1,0 +1,108 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input AddSprintMembersInput {
+  sprintId: String!
+  userIds: [String!]!
+}
+
+input CreateProjectInput {
+  description: String
+  name: String!
+}
+
+input CreateSprintInput {
+  endDate: String!
+  name: String!
+  projectId: String!
+  startDate: String!
+}
+
+type Mutation {
+  addSprintMembers(input: AddSprintMembersInput!): [SprintMember!]!
+  createProject(input: CreateProjectInput!): Project!
+  createSprint(input: CreateSprintInput!): Sprint!
+  requestRating(sprintId: String!): Boolean!
+  submitRating(input: SubmitRatingInput!): Rating!
+  validateToken(input: ValidateTokenInput!): TokenValidationPayload!
+}
+
+type Project {
+  description: String
+  id: ID!
+  name: String!
+}
+
+type Query {
+  getProjects: [Project!]!
+  getQuestionsByRole(roleId: String!): [Question!]!
+  getSprintMembers(sprintId: String!): [SprintMember!]!
+  getSprintRatings(sprintId: String!): [SprintRatingOutput!]!
+  getSprints(projectId: String!): [Sprint!]!
+}
+
+type Question {
+  id: ID!
+  text: String!
+}
+
+type Rating {
+  averageScore: Float!
+  id: ID!
+  ratedUser: User!
+  rater: User!
+}
+
+input RatingAnswerInput {
+  questionId: String!
+  score: Int!
+}
+
+type Role {
+  id: ID!
+  name: String!
+}
+
+type Sprint {
+  endDate: String!
+  id: ID!
+  name: String!
+  startDate: String!
+}
+
+type SprintMember {
+  id: ID!
+  user: User!
+}
+
+type SprintRatingOutput {
+  averageScore: Float!
+  userId: String!
+  userName: String!
+}
+
+input SubmitRatingInput {
+  answers: [RatingAnswerInput!]!
+  ratedUserId: String!
+  raterId: String!
+  sprintId: String!
+  token: String!
+}
+
+type TokenValidationPayload {
+  reason: String
+  userId: String
+  valid: Boolean!
+}
+
+type User {
+  email: String!
+  fullName: String!
+  id: ID!
+  role: Role!
+}
+
+input ValidateTokenInput {
+  token: String!
+}
