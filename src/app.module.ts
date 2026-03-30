@@ -1,26 +1,8 @@
 import { Module } from '@nestjs/common';
-import { GraphQLModule } from '@nestjs/graphql';
+import { ConfigModule } from '@nestjs/config';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { GraphQLModule } from '@nestjs/graphql';
 import { join } from 'path';
-import {
-  AggregatedRating,
-  AuditLog,
-  EmailLog,
-  OverallRating,
-  Project,
-  ProjectMember,
-  Question,
-  Rating,
-  RatingAnswer,
-  RatingRequest,
-  Role,
-  RolePermission,
-  SecureToken,
-  Sprint,
-  SprintMember,
-  User,
-} from './modules/database/entities';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { SprintsModule } from './modules/sprints/sprints.module';
@@ -30,52 +12,21 @@ import { EmailModule } from './modules/email/email.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { RbacModule } from './modules/rbac/rbac.module';
 import { UsersModule } from './modules/users/users.module';
-import { ConfigModule } from '@nestjs/config';
-
-export class AppModule {}
+import databaseConfig from './modules/database/database.config';
+import { DatabaseModule } from './modules/database/database.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [databaseConfig],
+      envFilePath: ['.env.local', '.env'],
     }),
-  ],
-})
-
-@Module({
-  imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST ?? 'localhost',
-      port: Number(process.env.DB_PORT ?? 5432),
-      username: process.env.DB_USER ?? 'postgres',
-      password: process.env.DB_PASSWORD ?? 'postgres',
-      database: process.env.DB_NAME ?? 'srs',
-      synchronize: false,
-      logging: false,
-      entities: [
-        Role,
-        RolePermission,
-        User,
-        Project,
-        ProjectMember,
-        Sprint,
-        SprintMember,
-        Question,
-        RatingRequest,
-        Rating,
-        RatingAnswer,
-        AggregatedRating,
-        OverallRating,
-        EmailLog,
-        SecureToken,
-        AuditLog,
-      ],
-    }),
+    DatabaseModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-      context: ({ req }: any) => ({ req }),
+      context: ({ req }: { req: unknown }) => ({ req }),
       sortSchema: true,
     }),
     AuthModule,
