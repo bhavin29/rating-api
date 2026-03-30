@@ -15,6 +15,7 @@ import { RatingsService } from './services/ratings.service';
 import { AuditModule } from '../audit/audit.module';
 import { AuthModule } from '../auth/auth.module';
 import { EmailModule } from '../email/email.module';
+import { RbacModule } from '../rbac/rbac.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { EmailModule } from '../email/email.module';
       OverallRating,
     ]),
     AuthModule,
+    RbacModule,
     EmailModule,
     AuditModule,
   ],
