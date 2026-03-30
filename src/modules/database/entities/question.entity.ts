@@ -11,7 +11,7 @@ export class Question {
   id: string;
 
   @Field()
-  @Column({ type: 'text' })
+  @Column({ type: 'text', name: 'text' })
   text: string;
 
   @ManyToOne(() => Role, (role) => role.questions, { onDelete: 'CASCADE' })
@@ -21,7 +21,7 @@ export class Question {
   @Column({ name: 'role_id' })
   roleId: string;
 
-  @Column({ default: true })
+  @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
   @OneToMany(() => RatingAnswer, (answer) => answer.question)
