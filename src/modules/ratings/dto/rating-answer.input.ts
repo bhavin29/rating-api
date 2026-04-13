@@ -1,10 +1,11 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
-import { IsInt, IsUUID, Max, Min } from 'class-validator';
+import { IsInt, Max, Min } from 'class-validator';
+import { IsDbUuid } from '../../../common/validators/is-db-uuid.decorator';
 
 @InputType()
 export class RatingAnswerInput {
   @Field()
-  @IsUUID()
+  @IsDbUuid()
   questionId: string;
 
   @Field(() => Int)

@@ -1,7 +1,8 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { ArrayMinSize, IsArray, IsUUID, ValidateNested } from 'class-validator';
+import { ArrayMinSize, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { RatingAnswerInput } from './rating-answer.input';
+import { IsDbUuid } from '../../../common/validators/is-db-uuid.decorator';
 
 @InputType()
 export class SubmitRatingInput {
@@ -9,15 +10,15 @@ export class SubmitRatingInput {
   token: string;
 
   @Field()
-  @IsUUID()
+  @IsDbUuid()
   sprintId: string;
 
   @Field()
-  @IsUUID()
+  @IsDbUuid()
   raterId: string;
 
   @Field()
-  @IsUUID()
+  @IsDbUuid()
   ratedUserId: string;
 
   @Field(() => [RatingAnswerInput])
