@@ -14,6 +14,7 @@ export enum TokenType {
 
 export enum AuditAction {
   CREATE_PROJECT = 'CREATE_PROJECT',
+  UPDATE_PROJECT = 'UPDATE_PROJECT',
   CREATE_SPRINT = 'CREATE_SPRINT',
   SUBMIT_RATING = 'SUBMIT_RATING',
 }

@@ -5,6 +5,7 @@ import { UserAuthGuard } from '../../auth/guards/user-auth.guard';
 import { RbacGuard } from '../../rbac/guards/rbac.guard';
 import { RequirePermissions } from '../../rbac/decorators/require-permissions.decorator';
 import { CreateProjectInput } from '../dto/create-project.input';
+import { UpdateProjectInput } from '../dto/update-project.input';
 import { ProjectsService } from '../services/projects.service';
 
 @Resolver(() => Project)
@@ -22,5 +23,11 @@ export class ProjectsResolver {
   @RequirePermissions('project:create')
   createProject(@Args('input') input: CreateProjectInput, @Context() context: any): Promise<Project> {
     return this.projectsService.createProject(input, context.req.user.id);
+  }
+
+  @Mutation(() => Project)
+  @RequirePermissions('project:update')
+  updateProject(@Args('input') input: UpdateProjectInput, @Context() context: any): Promise<Project> {
+    return this.projectsService.updateProject(input, context.req.user.id);
   }
 }

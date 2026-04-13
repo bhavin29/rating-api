@@ -35,7 +35,7 @@ DROP TYPE IF EXISTS audit_action_enum CASCADE;
 CREATE TYPE email_type_enum AS ENUM ('INVITE', 'REMINDER');
 CREATE TYPE email_status_enum AS ENUM ('SENT', 'FAILED');
 CREATE TYPE token_type_enum AS ENUM ('MAGIC_LINK');
-CREATE TYPE audit_action_enum AS ENUM ('CREATE_PROJECT', 'CREATE_SPRINT', 'SUBMIT_RATING');
+CREATE TYPE audit_action_enum AS ENUM ('CREATE_PROJECT', 'UPDATE_PROJECT', 'CREATE_SPRINT', 'SUBMIT_RATING');
 
 CREATE TABLE roles (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
