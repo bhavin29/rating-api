@@ -6,6 +6,7 @@ import { RbacGuard } from '../../rbac/guards/rbac.guard';
 import { RequirePermissions } from '../../rbac/decorators/require-permissions.decorator';
 import { AddSprintMembersInput } from '../dto/add-sprint-members.input';
 import { CreateSprintInput } from '../dto/create-sprint.input';
+import { UpdateSprintInput } from '../dto/update-sprint.input';
 import { SprintsService } from '../services/sprints.service';
 import { Context } from '@nestjs/graphql';
 
@@ -30,6 +31,12 @@ export class SprintsResolver {
   @RequirePermissions('sprint:create')
   createSprint(@Args('input') input: CreateSprintInput, @Context() context: any): Promise<Sprint> {
     return this.sprintsService.createSprint(input, context.req.user.id);
+  }
+
+  @Mutation(() => Sprint)
+  @RequirePermissions('sprint:update')
+  updateSprint(@Args('input') input: UpdateSprintInput): Promise<Sprint> {
+    return this.sprintsService.updateSprint(input);
   }
 
   @Mutation(() => [SprintMember])
