@@ -25,6 +25,7 @@ type Mutation {
   createSprint(input: CreateSprintInput!): Sprint!
   requestRating(sprintId: String!): Boolean!
   submitRating(input: SubmitRatingInput!): Rating!
+  updateProject(input: UpdateProjectInput!): Project!
   updateSprint(input: UpdateSprintInput!): Sprint!
   validateToken(input: ValidateTokenInput!): TokenValidationPayload!
 }
@@ -95,6 +96,12 @@ type TokenValidationPayload {
   reason: String
   userId: String
   valid: Boolean!
+}
+
+input UpdateProjectInput {
+  name: String!
+  projectId: String!
+  status: String
 }
 
 input UpdateSprintInput {

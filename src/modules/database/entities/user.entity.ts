@@ -30,6 +30,7 @@ export class User {
   @Column({ name: 'name' })
   fullName: string;
 
+  @Field()
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
