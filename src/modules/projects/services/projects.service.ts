@@ -6,6 +6,7 @@ import { Project, ProjectMember, User } from '../../database/entities';
 import { AddProjectMembersInput } from '../dto/add-project-members.input';
 import { CreateProjectInput } from '../dto/create-project.input';
 import { RemoveProjectMemberInput } from '../dto/remove-project-member.input';
+import { UpdateProjectMemberStatusInput } from '../dto/update-project-member-status.input';
 import { AuditService } from '../../audit/services/audit.service';
 import { UpdateProjectInput } from '../dto/update-project.input';
 
@@ -60,13 +61,28 @@ export class ProjectsService {
 
     const toInsert = input.userIds
       .filter((userId) => !existingUserIds.has(userId))
-      .map((userId) => this.projectMemberRepository.create({ projectId: input.projectId, userId }));
+      .map((userId) => this.projectMemberRepository.create({ projectId: input.projectId, userId, isActive: true }));
 
     if (toInsert.length > 0) {
       await this.projectMemberRepository.save(toInsert);
     }
 
     return this.getProjectMembers(input.projectId);
+  }
+
+  async updateProjectMemberStatus(input: UpdateProjectMemberStatusInput): Promise<ProjectMember> {
+    await this.ensureProjectExists(input.projectId);
+
+    const membership = await this.projectMemberRepository.findOne({
+      where: { projectId: input.projectId, userId: input.userId },
+    });
+
+    if (!membership) {
+      throw new NotFoundException('Project member not found');
+    }
+
+    membership.isActive = input.isActive;
+    return this.projectMemberRepository.save(membership);
   }
 
   async removeProjectMember(input: RemoveProjectMemberInput): Promise<boolean> {

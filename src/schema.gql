@@ -2,6 +2,11 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+input AddProjectMembersInput {
+  projectId: String!
+  userIds: [String!]!
+}
+
 input AddSprintMembersInput {
   sprintId: String!
   userIds: [String!]!
@@ -19,14 +24,27 @@ input CreateSprintInput {
   startDate: String!
 }
 
+input CreateUserInput {
+  email: String!
+  fullName: String!
+  isActive: Boolean
+  projectId: String
+  roleId: String!
+}
+
 type Mutation {
+  addProjectMembers(input: AddProjectMembersInput!): [ProjectMember!]!
   addSprintMembers(input: AddSprintMembersInput!): [SprintMember!]!
   createProject(input: CreateProjectInput!): Project!
   createSprint(input: CreateSprintInput!): Sprint!
+  createUser(input: CreateUserInput!): User!
+  removeProjectMember(input: RemoveProjectMemberInput!): Boolean!
   requestRating(sprintId: String!): Boolean!
   submitRating(input: SubmitRatingInput!): Rating!
   updateProject(input: UpdateProjectInput!): Project!
+  updateProjectMemberStatus(input: UpdateProjectMemberStatusInput!): ProjectMember!
   updateSprint(input: UpdateSprintInput!): Sprint!
+  updateUser(input: UpdateUserInput!): User!
   validateToken(input: ValidateTokenInput!): TokenValidationPayload!
 }
 
@@ -36,12 +54,21 @@ type Project {
   status: String
 }
 
+type ProjectMember {
+  id: ID!
+  isActive: Boolean!
+  user: User!
+}
+
 type Query {
+  getProjectMembers(projectId: String!): [ProjectMember!]!
   getProjects: [Project!]!
   getQuestionsByRole(roleId: String!): [Question!]!
+  getRoles: [Role!]!
   getSprintMembers(sprintId: String!): [SprintMember!]!
   getSprintRatings(sprintId: String!): [SprintRatingOutput!]!
   getSprints(projectId: String!): [Sprint!]!
+  getUsers: [User!]!
 }
 
 type Question {
@@ -59,6 +86,11 @@ type Rating {
 input RatingAnswerInput {
   questionId: String!
   score: Int!
+}
+
+input RemoveProjectMemberInput {
+  projectId: String!
+  userId: String!
 }
 
 type Role {
@@ -104,6 +136,12 @@ input UpdateProjectInput {
   status: String
 }
 
+input UpdateProjectMemberStatusInput {
+  isActive: Boolean!
+  projectId: String!
+  userId: String!
+}
+
 input UpdateSprintInput {
   endDate: String!
   name: String!
@@ -111,10 +149,19 @@ input UpdateSprintInput {
   startDate: String!
 }
 
+input UpdateUserInput {
+  email: String
+  fullName: String
+  isActive: Boolean
+  roleId: String
+  userId: String!
+}
+
 type User {
   email: String!
   fullName: String!
   id: ID!
+  isActive: Boolean!
   role: Role!
 }
 

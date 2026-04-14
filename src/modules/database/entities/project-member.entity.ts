@@ -25,4 +25,8 @@ export class ProjectMember {
 
   @Column({ name: 'user_id' })
   userId: string;
+
+  @Field()
+  @Column({ name: 'is_active', default: true })
+  isActive: boolean;
 }

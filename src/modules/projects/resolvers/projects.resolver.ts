@@ -7,6 +7,7 @@ import { RequirePermissions } from '../../rbac/decorators/require-permissions.de
 import { AddProjectMembersInput } from '../dto/add-project-members.input';
 import { CreateProjectInput } from '../dto/create-project.input';
 import { RemoveProjectMemberInput } from '../dto/remove-project-member.input';
+import { UpdateProjectMemberStatusInput } from '../dto/update-project-member-status.input';
 import { UpdateProjectInput } from '../dto/update-project.input';
 import { ProjectsService } from '../services/projects.service';
 
@@ -43,6 +44,12 @@ export class ProjectsResolver {
   @RequirePermissions('project:update')
   addProjectMembers(@Args('input') input: AddProjectMembersInput): Promise<ProjectMember[]> {
     return this.projectsService.addProjectMembers(input);
+  }
+
+  @Mutation(() => ProjectMember)
+  @RequirePermissions('project:update')
+  updateProjectMemberStatus(@Args('input') input: UpdateProjectMemberStatusInput): Promise<ProjectMember> {
+    return this.projectsService.updateProjectMemberStatus(input);
   }
 
   @Mutation(() => Boolean)

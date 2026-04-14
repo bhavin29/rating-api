@@ -66,6 +66,7 @@ CREATE TABLE project_members (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id uuid NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  is_active boolean NOT NULL DEFAULT true,
   CONSTRAINT uq_project_member UNIQUE (project_id, user_id)
 );
 

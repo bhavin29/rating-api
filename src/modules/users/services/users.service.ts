@@ -103,7 +103,7 @@ export class UsersService {
   private async addUserToProject(projectId: string, userId: string): Promise<void> {
     const existingMembership = await this.projectMemberRepository.findOne({ where: { projectId, userId } });
     if (!existingMembership) {
-      await this.projectMemberRepository.save(this.projectMemberRepository.create({ projectId, userId }));
+      await this.projectMemberRepository.save(this.projectMemberRepository.create({ projectId, userId, isActive: true }));
     }
   }
 }
