@@ -5,6 +5,7 @@ import { UserAuthGuard } from '../../auth/guards/user-auth.guard';
 import { RbacGuard } from '../../rbac/guards/rbac.guard';
 import { RequirePermissions } from '../../rbac/decorators/require-permissions.decorator';
 import { CreateUserInput } from '../dto/create-user.input';
+import { DeleteUserInput } from '../dto/delete-user.input';
 import { UpdateUserInput } from '../dto/update-user.input';
 import { UsersService } from '../services/users.service';
 
@@ -17,6 +18,12 @@ export class UsersResolver {
   @RequirePermissions('user:read')
   getUsers(): Promise<User[]> {
     return this.usersService.getUsers();
+  }
+
+  @Query(() => User)
+  @RequirePermissions('user:read')
+  getUser(@Args('userId') userId: string): Promise<User> {
+    return this.usersService.getUser(userId);
   }
 
   @Query(() => [Role])
@@ -35,5 +42,11 @@ export class UsersResolver {
   @RequirePermissions('user:update')
   updateUser(@Args('input') input: UpdateUserInput): Promise<User> {
     return this.usersService.updateUser(input);
+  }
+
+  @Mutation(() => Boolean)
+  @RequirePermissions('user:delete')
+  deleteUser(@Args('input') input: DeleteUserInput): Promise<boolean> {
+    return this.usersService.deleteUser(input);
   }
 }

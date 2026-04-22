@@ -26,8 +26,9 @@ input CreateSprintInput {
 
 input CreateUserInput {
   email: String!
-  fullName: String!
+  fullName: String
   isActive: Boolean
+  name: String
   projectId: String
   roleId: String!
 }
@@ -38,6 +39,7 @@ type Mutation {
   createProject(input: CreateProjectInput!): Project!
   createSprint(input: CreateSprintInput!): Sprint!
   createUser(input: CreateUserInput!): User!
+  deleteUser(input: DeleteUserInput!): Boolean!
   removeProjectMember(input: RemoveProjectMemberInput!): Boolean!
   requestRating(sprintId: String!): Boolean!
   submitRating(input: SubmitRatingInput!): Rating!
@@ -46,6 +48,10 @@ type Mutation {
   updateSprint(input: UpdateSprintInput!): Sprint!
   updateUser(input: UpdateUserInput!): User!
   validateToken(input: ValidateTokenInput!): TokenValidationPayload!
+}
+
+input DeleteUserInput {
+  userId: String!
 }
 
 type Project {
@@ -68,6 +74,7 @@ type Query {
   getSprintMembers(sprintId: String!): [SprintMember!]!
   getSprintRatings(sprintId: String!): [SprintRatingOutput!]!
   getSprints(projectId: String!): [Sprint!]!
+  getUser(userId: String!): User!
   getUsers: [User!]!
 }
 
@@ -153,6 +160,7 @@ input UpdateUserInput {
   email: String
   fullName: String
   isActive: Boolean
+  name: String
   roleId: String
   userId: String!
 }
@@ -162,7 +170,9 @@ type User {
   fullName: String!
   id: ID!
   isActive: Boolean!
+  name: String!
   role: Role!
+  roleId: String!
 }
 
 input ValidateTokenInput {

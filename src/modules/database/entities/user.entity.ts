@@ -31,6 +31,11 @@ export class User {
   fullName: string;
 
   @Field()
+  get name(): string {
+    return this.fullName;
+  }
+
+  @Field()
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
@@ -40,6 +45,7 @@ export class User {
   role: Role;
 
   @Column({ name: 'role_id' })
+  @Field()
   roleId: string;
 
   @OneToMany(() => ProjectMember, (member) => member.user)

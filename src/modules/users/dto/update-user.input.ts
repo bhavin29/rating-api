@@ -22,6 +22,12 @@ export class UpdateUserInput {
 
   @Field({ nullable: true })
   @IsOptional()
+  @IsString()
+  @MaxLength(150)
+  name?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
   @IsDbUuid()
   roleId?: string;
 
