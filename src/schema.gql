@@ -17,6 +17,12 @@ input CreateProjectInput {
   name: String!
 }
 
+input CreateQuestionInput {
+  isActive: Boolean
+  roleId: String!
+  text: String!
+}
+
 input CreateSprintInput {
   endDate: String!
   name: String!
@@ -33,25 +39,29 @@ input CreateUserInput {
   roleId: String!
 }
 
+input DeleteUserInput {
+  userId: String!
+}
+
 type Mutation {
   addProjectMembers(input: AddProjectMembersInput!): [ProjectMember!]!
   addSprintMembers(input: AddSprintMembersInput!): [SprintMember!]!
   createProject(input: CreateProjectInput!): Project!
+  createQuestion(input: CreateQuestionInput!): Question!
   createSprint(input: CreateSprintInput!): Sprint!
   createUser(input: CreateUserInput!): User!
+  deleteQuestion(id: String!): Boolean!
   deleteUser(input: DeleteUserInput!): Boolean!
   removeProjectMember(input: RemoveProjectMemberInput!): Boolean!
   requestRating(sprintId: String!): Boolean!
   submitRating(input: SubmitRatingInput!): Rating!
+  toggleQuestionStatus(input: ToggleQuestionStatusInput!): Question!
   updateProject(input: UpdateProjectInput!): Project!
   updateProjectMemberStatus(input: UpdateProjectMemberStatusInput!): ProjectMember!
+  updateQuestion(input: UpdateQuestionInput!): Question!
   updateSprint(input: UpdateSprintInput!): Sprint!
   updateUser(input: UpdateUserInput!): User!
   validateToken(input: ValidateTokenInput!): TokenValidationPayload!
-}
-
-input DeleteUserInput {
-  userId: String!
 }
 
 type Project {
@@ -76,10 +86,14 @@ type Query {
   getSprints(projectId: String!): [Sprint!]!
   getUser(userId: String!): User!
   getUsers: [User!]!
+  question(id: String!): Question!
+  questions(isActive: Boolean, roleId: String, search: String, skip: Int = 0, take: Int = 20): [Question!]!
 }
 
 type Question {
   id: ID!
+  isActive: Boolean!
+  roleId: String!
   text: String!
 }
 
@@ -131,6 +145,11 @@ input SubmitRatingInput {
   token: String!
 }
 
+input ToggleQuestionStatusInput {
+  id: String!
+  isActive: Boolean!
+}
+
 type TokenValidationPayload {
   reason: String
   userId: String
@@ -147,6 +166,13 @@ input UpdateProjectMemberStatusInput {
   isActive: Boolean!
   projectId: String!
   userId: String!
+}
+
+input UpdateQuestionInput {
+  id: String!
+  isActive: Boolean
+  roleId: String
+  text: String
 }
 
 input UpdateSprintInput {

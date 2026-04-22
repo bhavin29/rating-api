@@ -168,6 +168,7 @@ CREATE INDEX idx_sprints_project_id ON sprints(project_id);
 CREATE INDEX idx_sprint_members_sprint_id ON sprint_members(sprint_id);
 CREATE INDEX idx_sprint_members_user_id ON sprint_members(user_id);
 CREATE INDEX idx_questions_role_id ON questions(role_id);
+CREATE INDEX idx_questions_is_active ON questions(is_active);
 CREATE INDEX idx_secure_tokens_user_id ON secure_tokens(user_id);
 CREATE INDEX idx_secure_tokens_token ON secure_tokens(token);
 CREATE INDEX idx_rating_requests_sprint_id ON rating_requests(sprint_id);
