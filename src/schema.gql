@@ -8,6 +8,7 @@ input AddProjectMembersInput {
 }
 
 input AddSprintMembersInput {
+  projectId: String
   sprintId: String!
   userIds: [String!]!
 }
@@ -128,6 +129,7 @@ type Sprint {
 
 type SprintMember {
   id: ID!
+  projectId: String!
   user: User!
 }
 

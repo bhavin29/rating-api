@@ -1,6 +1,5 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { RolePermission } from './role-permission.entity';
 import { User } from './user.entity';
 import { Question } from './question.entity';
 
@@ -14,9 +13,6 @@ export class Role {
   @Field()
   @Column({ unique: true })
   name: string;
-
-  @OneToMany(() => RolePermission, (permission) => permission.role)
-  permissions: RolePermission[];
 
   @OneToMany(() => User, (user) => user.role)
   users: User[];

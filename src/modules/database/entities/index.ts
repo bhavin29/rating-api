@@ -8,7 +8,6 @@ export * from './question.entity';
 export * from './rating-answer.entity';
 export * from './rating-request.entity';
 export * from './rating.entity';
-export * from './role-permission.entity';
 export * from './role.entity';
 export * from './secure-token.entity';
 export * from './sprint-member.entity';

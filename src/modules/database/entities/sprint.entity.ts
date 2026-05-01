@@ -1,6 +1,5 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Project } from './project.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { SprintMember } from './sprint-member.entity';
 import { Rating } from './rating.entity';
 import { AggregatedRating } from './aggregated-rating.entity';
@@ -23,13 +22,6 @@ export class Sprint {
   @Field()
   @Column({ type: 'date', name: 'end_date' })
   endDate: string;
-
-  @ManyToOne(() => Project, (project) => project.sprints, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'project_id' })
-  project: Project;
-
-  @Column({ name: 'project_id' })
-  projectId: string;
 
   @OneToMany(() => SprintMember, (member) => member.sprint)
   members: SprintMember[];

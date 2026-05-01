@@ -14,7 +14,6 @@ import {
   RatingAnswer,
   RatingRequest,
   Role,
-  RolePermission,
   SecureToken,
   Sprint,
   SprintMember,
@@ -46,7 +45,6 @@ import {
           ssl: sslEnabled ? { rejectUnauthorized: false } : false,
           entities: [
             Role,
-            RolePermission,
             User,
             Project,
             ProjectMember,

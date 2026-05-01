@@ -24,7 +24,6 @@ DROP TABLE IF EXISTS sprints CASCADE;
 DROP TABLE IF EXISTS project_members CASCADE;
 DROP TABLE IF EXISTS projects CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS role_permissions CASCADE;
 DROP TABLE IF EXISTS roles CASCADE;
 
 DROP TYPE IF EXISTS email_type_enum CASCADE;
@@ -40,12 +39,6 @@ CREATE TYPE audit_action_enum AS ENUM ('CREATE_PROJECT', 'UPDATE_PROJECT', 'CREA
 CREATE TABLE roles (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name varchar NOT NULL UNIQUE
-);
-
-CREATE TABLE role_permissions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  permission_key varchar NOT NULL,
-  role_id uuid NOT NULL REFERENCES roles(id) ON DELETE CASCADE
 );
 
 CREATE TABLE users (
@@ -74,13 +67,13 @@ CREATE TABLE sprints (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name varchar NOT NULL,
   start_date date NOT NULL,
-  end_date date NOT NULL,
-  project_id uuid NOT NULL REFERENCES projects(id) ON DELETE CASCADE
+  end_date date NOT NULL
 );
 
 CREATE TABLE sprint_members (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   sprint_id uuid NOT NULL REFERENCES sprints(id) ON DELETE CASCADE,
+  project_id uuid NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT uq_sprint_member UNIQUE (sprint_id, user_id)
 );
@@ -160,12 +153,11 @@ CREATE TABLE audit_logs (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_role_permissions_role_id ON role_permissions(role_id);
 CREATE INDEX idx_users_role_id ON users(role_id);
 CREATE INDEX idx_project_members_project_id ON project_members(project_id);
 CREATE INDEX idx_project_members_user_id ON project_members(user_id);
-CREATE INDEX idx_sprints_project_id ON sprints(project_id);
 CREATE INDEX idx_sprint_members_sprint_id ON sprint_members(sprint_id);
+CREATE INDEX idx_sprint_members_project_id ON sprint_members(project_id);
 CREATE INDEX idx_sprint_members_user_id ON sprint_members(user_id);
 CREATE INDEX idx_questions_role_id ON questions(role_id);
 CREATE INDEX idx_questions_is_active ON questions(is_active);
