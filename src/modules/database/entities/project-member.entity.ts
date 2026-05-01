@@ -1,6 +1,7 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { Project } from './project.entity';
+import { Role } from './role.entity';
 import { User } from './user.entity';
 
 @ObjectType()
@@ -25,6 +26,15 @@ export class ProjectMember {
 
   @Column({ name: 'user_id' })
   userId: string;
+
+  @Field(() => Role, { nullable: true })
+  @ManyToOne(() => Role, (role) => role.projectMemberships, { eager: true, nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'role_id' })
+  role?: Role | null;
+
+  @Field({ nullable: true })
+  @Column({ name: 'role_id', nullable: true })
+  roleId?: string | null;
 
   @Field()
   @Column({ name: 'is_active', default: true })

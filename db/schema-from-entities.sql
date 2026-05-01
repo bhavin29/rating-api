@@ -59,6 +59,7 @@ CREATE TABLE project_members (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id uuid NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role_id uuid NULL REFERENCES roles(id) ON DELETE SET NULL,
   is_active boolean NOT NULL DEFAULT true,
   CONSTRAINT uq_project_member UNIQUE (project_id, user_id)
 );
@@ -156,6 +157,7 @@ CREATE TABLE audit_logs (
 CREATE INDEX idx_users_role_id ON users(role_id);
 CREATE INDEX idx_project_members_project_id ON project_members(project_id);
 CREATE INDEX idx_project_members_user_id ON project_members(user_id);
+CREATE INDEX idx_project_members_role_id ON project_members(role_id);
 CREATE INDEX idx_sprint_members_sprint_id ON sprint_members(sprint_id);
 CREATE INDEX idx_sprint_members_project_id ON sprint_members(project_id);
 CREATE INDEX idx_sprint_members_user_id ON sprint_members(user_id);

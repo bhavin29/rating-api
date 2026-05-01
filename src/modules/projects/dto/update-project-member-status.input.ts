@@ -1,5 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsBoolean } from 'class-validator';
+import { IsBoolean, IsOptional } from 'class-validator';
 import { IsDbUuid } from '../../../common/validators/is-db-uuid.decorator';
 
 @InputType()
@@ -12,7 +12,13 @@ export class UpdateProjectMemberStatusInput {
   @IsDbUuid()
   userId: string;
 
-  @Field()
+  @Field({ nullable: true })
+  @IsOptional()
   @IsBoolean()
-  isActive: boolean;
+  isActive?: boolean;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsDbUuid()
+  roleId?: string | null;
 }

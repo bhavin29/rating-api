@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { AuditAction } from '../../../common/enums';
-import { Project, ProjectMember, User } from '../../database/entities';
+import { Project, ProjectMember, Role, User } from '../../database/entities';
 import { AddProjectMembersInput } from '../dto/add-project-members.input';
 import { CreateProjectInput } from '../dto/create-project.input';
 import { RemoveProjectMemberInput } from '../dto/remove-project-member.input';
@@ -16,6 +16,7 @@ export class ProjectsService {
     @InjectRepository(Project) private readonly projectRepository: Repository<Project>,
     @InjectRepository(ProjectMember) private readonly projectMemberRepository: Repository<ProjectMember>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Role) private readonly roleRepository: Repository<Role>,
     private readonly auditService: AuditService,
   ) {}
 
@@ -50,6 +51,9 @@ export class ProjectsService {
 
   async addProjectMembers(input: AddProjectMembersInput): Promise<ProjectMember[]> {
     await this.ensureProjectExists(input.projectId);
+    if (input.roleId != null) {
+      await this.ensureRoleExists(input.roleId);
+    }
 
     const users = await this.userRepository.findBy({ id: In(input.userIds) });
     if (users.length !== input.userIds.length) {
@@ -61,7 +65,14 @@ export class ProjectsService {
 
     const toInsert = input.userIds
       .filter((userId) => !existingUserIds.has(userId))
-      .map((userId) => this.projectMemberRepository.create({ projectId: input.projectId, userId, isActive: true }));
+      .map((userId) =>
+        this.projectMemberRepository.create({
+          projectId: input.projectId,
+          userId,
+          roleId: input.roleId ?? null,
+          isActive: true,
+        }),
+      );
 
     if (toInsert.length > 0) {
       await this.projectMemberRepository.save(toInsert);
@@ -72,6 +83,9 @@ export class ProjectsService {
 
   async updateProjectMemberStatus(input: UpdateProjectMemberStatusInput): Promise<ProjectMember> {
     await this.ensureProjectExists(input.projectId);
+    if (input.isActive === undefined && input.roleId === undefined) {
+      throw new BadRequestException('No project member changes provided');
+    }
 
     const membership = await this.projectMemberRepository.findOne({
       where: { projectId: input.projectId, userId: input.userId },
@@ -81,7 +95,17 @@ export class ProjectsService {
       throw new NotFoundException('Project member not found');
     }
 
-    membership.isActive = input.isActive;
+    if (input.roleId !== undefined) {
+      if (input.roleId !== null) {
+        await this.ensureRoleExists(input.roleId);
+      }
+      membership.roleId = input.roleId;
+    }
+
+    if (input.isActive !== undefined) {
+      membership.isActive = input.isActive;
+    }
+
     return this.projectMemberRepository.save(membership);
   }
 
@@ -104,6 +128,13 @@ export class ProjectsService {
     const project = await this.projectRepository.findOne({ where: { id: projectId } });
     if (!project) {
       throw new NotFoundException('Project not found');
+    }
+  }
+
+  private async ensureRoleExists(roleId: string): Promise<void> {
+    const role = await this.roleRepository.findOne({ where: { id: roleId } });
+    if (!role) {
+      throw new NotFoundException('Role not found');
     }
   }
 }

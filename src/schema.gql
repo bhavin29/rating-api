@@ -4,6 +4,7 @@
 
 input AddProjectMembersInput {
   projectId: String!
+  roleId: String
   userIds: [String!]!
 }
 
@@ -74,6 +75,8 @@ type Project {
 type ProjectMember {
   id: ID!
   isActive: Boolean!
+  role: Role
+  roleId: String
   user: User!
 }
 
@@ -165,8 +168,9 @@ input UpdateProjectInput {
 }
 
 input UpdateProjectMemberStatusInput {
-  isActive: Boolean!
+  isActive: Boolean
   projectId: String!
+  roleId: String
   userId: String!
 }
 
