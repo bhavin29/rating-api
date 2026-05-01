@@ -12,12 +12,12 @@ export class UpdateProjectMemberStatusInput {
   @IsDbUuid()
   userId: string;
 
-  @Field({ nullable: true })
+  @Field(() => Boolean, { nullable: true })
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
   @IsDbUuid()
   roleId?: string | null;

@@ -16,7 +16,7 @@ export class AddProjectMembersInput {
   @Matches(DB_UUID_REGEX, { each: true, message: 'each value in userIds must be a UUID-like identifier' })
   userIds: string[];
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
   @IsDbUuid()
   roleId?: string | null;

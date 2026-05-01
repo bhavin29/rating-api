@@ -32,7 +32,7 @@ export class ProjectMember {
   @JoinColumn({ name: 'role_id' })
   role?: Role | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @Column({ name: 'role_id', nullable: true })
   roleId?: string | null;
 
