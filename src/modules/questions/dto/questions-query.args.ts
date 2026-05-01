@@ -16,6 +16,16 @@ export class QuestionsQueryArgs {
   @IsDbUuid()
   roleId?: string;
 
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsDbUuid()
+  projectId?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsDbUuid()
+  sprintId?: string;
+
   @Field({ nullable: true })
   @IsOptional()
   @IsBoolean()

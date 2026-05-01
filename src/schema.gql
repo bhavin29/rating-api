@@ -21,7 +21,9 @@ input CreateProjectInput {
 
 input CreateQuestionInput {
   isActive: Boolean
+  projectId: String
   roleId: String!
+  sprintId: String
   text: String!
 }
 
@@ -91,13 +93,17 @@ type Query {
   getUser(userId: String!): User!
   getUsers: [User!]!
   question(id: String!): Question!
-  questions(isActive: Boolean, roleId: String, search: String, skip: Int = 0, take: Int = 20): [Question!]!
+  questions(isActive: Boolean, projectId: String, roleId: String, search: String, skip: Int = 0, sprintId: String, take: Int = 20): [Question!]!
 }
 
 type Question {
   id: ID!
   isActive: Boolean!
+  project: Project
+  projectId: String
   roleId: String!
+  sprint: Sprint
+  sprintId: String
   text: String!
 }
 
@@ -177,7 +183,9 @@ input UpdateProjectMemberStatusInput {
 input UpdateQuestionInput {
   id: String!
   isActive: Boolean
+  projectId: String
   roleId: String
+  sprintId: String
   text: String
 }
 

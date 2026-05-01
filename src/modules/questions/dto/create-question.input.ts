@@ -14,6 +14,16 @@ export class CreateQuestionInput {
   @IsDbUuid()
   roleId: string;
 
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsDbUuid()
+  projectId?: string | null;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsDbUuid()
+  sprintId?: string | null;
+
   @Field({ nullable: true })
   @IsOptional()
   @IsBoolean()

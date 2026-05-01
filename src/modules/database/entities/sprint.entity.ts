@@ -3,6 +3,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { SprintMember } from './sprint-member.entity';
 import { Rating } from './rating.entity';
 import { AggregatedRating } from './aggregated-rating.entity';
+import { Question } from './question.entity';
 
 @ObjectType()
 @Entity('sprints')
@@ -31,4 +32,7 @@ export class Sprint {
 
   @OneToMany(() => AggregatedRating, (rating) => rating.sprint)
   aggregatedRatings: AggregatedRating[];
+
+  @OneToMany(() => Question, (question) => question.sprint)
+  questions: Question[];
 }

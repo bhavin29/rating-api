@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
-import { Question, Role } from '../../database/entities';
+import { Project, Question, Role, Sprint } from '../../database/entities';
 import { CreateQuestionInput } from '../dto/create-question.input';
 import { QuestionsQueryArgs } from '../dto/questions-query.args';
 import { ToggleQuestionStatusInput } from '../dto/toggle-question-status.input';
@@ -12,6 +12,8 @@ export class QuestionsService {
   constructor(
     @InjectRepository(Question) private readonly questionRepository: Repository<Question>,
     @InjectRepository(Role) private readonly roleRepository: Repository<Role>,
+    @InjectRepository(Project) private readonly projectRepository: Repository<Project>,
+    @InjectRepository(Sprint) private readonly sprintRepository: Repository<Sprint>,
   ) {}
 
   getQuestionsByRole(roleId: string): Promise<Question[]> {
@@ -22,6 +24,8 @@ export class QuestionsService {
     const where = {
       ...(args.search ? { text: ILike(`%${args.search.trim()}%`) } : {}),
       ...(args.roleId ? { roleId: args.roleId } : {}),
+      ...(args.projectId ? { projectId: args.projectId } : {}),
+      ...(args.sprintId ? { sprintId: args.sprintId } : {}),
       ...(args.isActive !== undefined ? { isActive: args.isActive } : {}),
     };
 
@@ -44,10 +48,14 @@ export class QuestionsService {
 
   async createQuestion(input: CreateQuestionInput): Promise<Question> {
     await this.ensureRoleExists(input.roleId);
+    await this.ensureProjectExists(input.projectId);
+    await this.ensureSprintExists(input.sprintId);
 
     const question = this.questionRepository.create({
       text: this.normalizeQuestionText(input.text),
       roleId: input.roleId,
+      projectId: input.projectId ?? null,
+      sprintId: input.sprintId ?? null,
       isActive: input.isActive ?? true,
     });
 
@@ -60,6 +68,16 @@ export class QuestionsService {
     if (input.roleId !== undefined) {
       await this.ensureRoleExists(input.roleId);
       question.roleId = input.roleId;
+    }
+
+    if (input.projectId !== undefined) {
+      await this.ensureProjectExists(input.projectId);
+      question.projectId = input.projectId;
+    }
+
+    if (input.sprintId !== undefined) {
+      await this.ensureSprintExists(input.sprintId);
+      question.sprintId = input.sprintId;
     }
 
     if (input.text !== undefined) {
@@ -97,6 +115,28 @@ export class QuestionsService {
     const role = await this.roleRepository.findOne({ where: { id: roleId } });
     if (!role) {
       throw new NotFoundException('Role not found');
+    }
+  }
+
+  private async ensureProjectExists(projectId?: string | null): Promise<void> {
+    if (projectId == null) {
+      return;
+    }
+
+    const project = await this.projectRepository.findOne({ where: { id: projectId } });
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+  }
+
+  private async ensureSprintExists(sprintId?: string | null): Promise<void> {
+    if (sprintId == null) {
+      return;
+    }
+
+    const sprint = await this.sprintRepository.findOne({ where: { id: sprintId } });
+    if (!sprint) {
+      throw new NotFoundException('Sprint not found');
     }
   }
 

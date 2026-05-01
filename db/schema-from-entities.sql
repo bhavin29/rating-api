@@ -83,6 +83,8 @@ CREATE TABLE questions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   text text NOT NULL,
   role_id uuid NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+  project_id uuid NULL REFERENCES projects(id) ON DELETE SET NULL,
+  sprint_id uuid NULL REFERENCES sprints(id) ON DELETE SET NULL,
   is_active boolean NOT NULL DEFAULT true
 );
 
@@ -162,6 +164,8 @@ CREATE INDEX idx_sprint_members_sprint_id ON sprint_members(sprint_id);
 CREATE INDEX idx_sprint_members_project_id ON sprint_members(project_id);
 CREATE INDEX idx_sprint_members_user_id ON sprint_members(user_id);
 CREATE INDEX idx_questions_role_id ON questions(role_id);
+CREATE INDEX idx_questions_project_id ON questions(project_id);
+CREATE INDEX idx_questions_sprint_id ON questions(sprint_id);
 CREATE INDEX idx_questions_is_active ON questions(is_active);
 CREATE INDEX idx_secure_tokens_user_id ON secure_tokens(user_id);
 CREATE INDEX idx_secure_tokens_token ON secure_tokens(token);
