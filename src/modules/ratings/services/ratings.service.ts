@@ -22,7 +22,7 @@ import { AuthService } from "../../auth/services/auth.service";
 import { EmailService } from "../../email/services/email.service";
 import { SubmitRatingInput } from "../dto/submit-rating.input";
 import { SprintRatingOutput } from "../dto/sprint-rating.output";
-import { SprintRatingRequestOutput } from "../dto/sprint-rating-request.output";
+import { SprintRatingRequestOutput, RatingQuestion } from "../dto/sprint-rating-request.output";
 
 @Injectable()
 export class RatingsService {
@@ -268,24 +268,37 @@ export class RatingsService {
 
   async generateSprintRatingRequest(
     spmId: string,
-  ): Promise<SprintRatingRequestOutput[]> {
+  ): Promise<SprintRatingRequestOutput | null> {
     try {
       const rows = await this.dataSource.query(
         `SELECT * FROM public.generate_sprint_rating_request($1)`,
         [spmId],
       );
 
-      return rows.map((row: any) => ({
-        projectName: row.project_name,
-        sprintName: row.sprint_name,
-        ratedUserName: row.rated_user_name,
-        ratedUserRole: row.rated_user_role,
+      if (!rows || rows.length === 0) {
+        return null;
+      }
+
+      // All rows share the same spmId, project, sprint, and rated user info
+      const firstRow = rows[0];
+
+      // Group questions from all rows
+      const questions: RatingQuestion[] = rows.map((row: any) => ({
+        id: row.question_id || row.id || '',
+        text: row.question_text,
+        ratingByUserId: row.rating_by_user_id || '',
         ratingByUserName: row.rating_by_user_name,
         ratingByUserRole: row.rating_by_user_role,
-        questionText: row.question_text,
-        rating: Number(row.rating),
-        answer: row.answer || undefined,
       }));
+
+      return {
+        spmId,
+        projectName: firstRow.project_name,
+        sprintName: firstRow.sprint_name,
+        ratedUserName: firstRow.rated_user_name,
+        ratedUserRole: firstRow.rated_user_role,
+        questions,
+      };
     } catch (error) {
       if (error instanceof Error) {
         throw new BadRequestException(

@@ -1,7 +1,28 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
+
+@ObjectType()
+export class RatingQuestion {
+  @Field()
+  id: string;
+
+  @Field()
+  text: string;
+
+  @Field()
+  ratingByUserId: string;
+
+  @Field()
+  ratingByUserName: string;
+
+  @Field()
+  ratingByUserRole: string;
+}
 
 @ObjectType()
 export class SprintRatingRequestOutput {
+  @Field()
+  spmId: string;
+
   @Field()
   projectName: string;
 
@@ -14,18 +35,6 @@ export class SprintRatingRequestOutput {
   @Field()
   ratedUserRole: string;
 
-  @Field()
-  ratingByUserName: string;
-
-  @Field()
-  ratingByUserRole: string;
-
-  @Field()
-  questionText: string;
-
-  @Field(() => Int)
-  rating: number;
-
-  @Field({ nullable: true })
-  answer?: string;
+  @Field(() => [RatingQuestion])
+  questions: RatingQuestion[];
 }

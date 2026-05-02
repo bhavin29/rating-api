@@ -41,10 +41,6 @@ input DeleteUserInput {
   userId: String!
 }
 
-input GenerateSprintRatingRequestInput {
-  spmId: String!
-}
-
 type Mutation {
   addProjectMembers(input: AddProjectMembersInput!): [ProjectMember!]!
   assignProjectMembersToSprint(sprintId: String!): Boolean!
@@ -82,7 +78,7 @@ type ProjectMember {
 }
 
 type Query {
-  generateSprintRatingRequest(input: GenerateSprintRatingRequestInput!): [SprintRatingRequestOutput!]!
+  generateSprintRatingRequest(spmId: String!): SprintRatingRequestOutput
   getProjectMembers(projectId: String!): [ProjectMember!]!
   getProjects: [Project!]!
   getQuestionsByRole(roleId: String!): [Question!]!
@@ -118,6 +114,14 @@ input RatingAnswerInput {
   score: Int!
 }
 
+type RatingQuestion {
+  id: String!
+  ratingByUserId: String!
+  ratingByUserName: String!
+  ratingByUserRole: String!
+  text: String!
+}
+
 input RemoveProjectMemberInput {
   projectId: String!
   userId: String!
@@ -142,14 +146,11 @@ type SprintRatingOutput {
 }
 
 type SprintRatingRequestOutput {
-  answer: String
   projectName: String!
-  questionText: String!
+  questions: [RatingQuestion!]!
   ratedUserName: String!
   ratedUserRole: String!
-  rating: Int!
-  ratingByUserName: String!
-  ratingByUserRole: String!
+  spmId: String!
   sprintName: String!
 }
 

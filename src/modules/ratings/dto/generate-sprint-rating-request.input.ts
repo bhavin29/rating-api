@@ -1,8 +1,8 @@
-import { Field, InputType } from '@nestjs/graphql';
+import { Field, ArgsType } from '@nestjs/graphql';
 import { IsDbUuid } from '../../../common/validators/is-db-uuid.decorator';
 
-@InputType()
-export class GenerateSprintRatingRequestInput {
+@ArgsType()
+export class GenerateSprintRatingRequestArgs {
   @Field()
   @IsDbUuid()
   spmId: string;
