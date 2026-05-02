@@ -22,6 +22,7 @@ import { AuthService } from "../../auth/services/auth.service";
 import { EmailService } from "../../email/services/email.service";
 import { SubmitRatingInput } from "../dto/submit-rating.input";
 import { SprintRatingOutput } from "../dto/sprint-rating.output";
+import { SprintRatingRequestOutput } from "../dto/sprint-rating-request.output";
 
 @Injectable()
 export class RatingsService {
@@ -263,6 +264,38 @@ export class RatingsService {
     }
 
     throw new BadRequestException("Sprint is not associated with a project");
+  }
+
+  async generateSprintRatingRequest(
+    spmId: string,
+  ): Promise<SprintRatingRequestOutput[]> {
+    try {
+      const rows = await this.dataSource.query(
+        `SELECT * FROM public.generate_sprint_rating_request($1)`,
+        [spmId],
+      );
+
+      return rows.map((row: any) => ({
+        projectName: row.project_name,
+        sprintName: row.sprint_name,
+        ratedUserName: row.rated_user_name,
+        ratedUserRole: row.rated_user_role,
+        ratingByUserName: row.rating_by_user_name,
+        ratingByUserRole: row.rating_by_user_role,
+        questionText: row.question_text,
+        rating: Number(row.rating),
+        answer: row.answer || undefined,
+      }));
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new BadRequestException(
+          `Failed to generate sprint rating request: ${error.message}`,
+        );
+      }
+      throw new BadRequestException(
+        "Failed to generate sprint rating request",
+      );
+    }
   }
 
   private async hasColumn(

@@ -126,6 +126,42 @@ export class SprintsService {
     return this.sprintProjectColumnExists;
   }
 
+  async assignProjectMembersToSprint(sprintId: string): Promise<boolean> {
+    try {
+      await this.dataSource.query(
+        `SELECT assign_project_members_to_sprint($1)`,
+        [sprintId],
+      );
+      return true;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new BadRequestException(
+          `Failed to assign project members to sprint: ${error.message}`,
+        );
+      }
+      throw new BadRequestException(
+        "Failed to assign project members to sprint",
+      );
+    }
+  }
+
+  async generatePeerRatings(sprintId: string): Promise<boolean> {
+    try {
+      await this.dataSource.query(
+        `SELECT generate_peer_ratings($1)`,
+        [sprintId],
+      );
+      return true;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new BadRequestException(
+          `Failed to generate peer ratings: ${error.message}`,
+        );
+      }
+      throw new BadRequestException("Failed to generate peer ratings");
+    }
+  }
+
   private async hasColumn(
     tableName: string,
     columnName: string,

@@ -34,4 +34,18 @@ export class SprintsResolver {
   updateSprint(@Args("input") input: UpdateSprintInput): Promise<Sprint> {
     return this.sprintsService.updateSprint(input);
   }
+
+  @Mutation(() => Boolean)
+  @RequirePermissions("sprint:update")
+  assignProjectMembersToSprint(
+    @Args("sprintId") sprintId: string,
+  ): Promise<boolean> {
+    return this.sprintsService.assignProjectMembersToSprint(sprintId);
+  }
+
+  @Mutation(() => Boolean)
+  @RequirePermissions("sprint:update")
+  generatePeerRatings(@Args("sprintId") sprintId: string): Promise<boolean> {
+    return this.sprintsService.generatePeerRatings(sprintId);
+  }
 }

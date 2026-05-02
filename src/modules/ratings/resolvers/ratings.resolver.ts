@@ -6,6 +6,8 @@ import { RbacGuard } from '../../rbac/guards/rbac.guard';
 import { RequirePermissions } from '../../rbac/decorators/require-permissions.decorator';
 import { SubmitRatingInput } from '../dto/submit-rating.input';
 import { SprintRatingOutput } from '../dto/sprint-rating.output';
+import { SprintRatingRequestOutput } from '../dto/sprint-rating-request.output';
+import { GenerateSprintRatingRequestInput } from '../dto/generate-sprint-rating-request.input';
 import { RatingsService } from '../services/ratings.service';
 
 @Resolver()
@@ -29,5 +31,14 @@ export class RatingsResolver {
   @RequirePermissions('rating:read')
   getSprintRatings(@Args('sprintId') sprintId: string): Promise<SprintRatingOutput[]> {
     return this.ratingsService.getSprintRatings(sprintId);
+  }
+
+  @Query(() => [SprintRatingRequestOutput])
+  @UseGuards(UserAuthGuard, RbacGuard)
+  @RequirePermissions('rating:read')
+  generateSprintRatingRequest(
+    @Args('input') input: GenerateSprintRatingRequestInput,
+  ): Promise<SprintRatingRequestOutput[]> {
+    return this.ratingsService.generateSprintRatingRequest(input.spmId);
   }
 }

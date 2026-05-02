@@ -41,14 +41,20 @@ input DeleteUserInput {
   userId: String!
 }
 
+input GenerateSprintRatingRequestInput {
+  spmId: String!
+}
+
 type Mutation {
   addProjectMembers(input: AddProjectMembersInput!): [ProjectMember!]!
+  assignProjectMembersToSprint(sprintId: String!): Boolean!
   createProject(input: CreateProjectInput!): Project!
   createQuestion(input: CreateQuestionInput!): Question!
   createSprint(input: CreateSprintInput!): Sprint!
   createUser(input: CreateUserInput!): User!
   deleteQuestion(id: String!): Boolean!
   deleteUser(input: DeleteUserInput!): Boolean!
+  generatePeerRatings(sprintId: String!): Boolean!
   removeProjectMember(input: RemoveProjectMemberInput!): Boolean!
   requestRating(sprintId: String!): Boolean!
   submitRating(input: SubmitRatingInput!): Rating!
@@ -76,6 +82,7 @@ type ProjectMember {
 }
 
 type Query {
+  generateSprintRatingRequest(input: GenerateSprintRatingRequestInput!): [SprintRatingRequestOutput!]!
   getProjectMembers(projectId: String!): [ProjectMember!]!
   getProjects: [Project!]!
   getQuestionsByRole(roleId: String!): [Question!]!
@@ -132,6 +139,18 @@ type SprintRatingOutput {
   averageScore: Float!
   userId: String!
   userName: String!
+}
+
+type SprintRatingRequestOutput {
+  answer: String
+  projectName: String!
+  questionText: String!
+  ratedUserName: String!
+  ratedUserRole: String!
+  rating: Int!
+  ratingByUserName: String!
+  ratingByUserRole: String!
+  sprintName: String!
 }
 
 input SubmitRatingInput {

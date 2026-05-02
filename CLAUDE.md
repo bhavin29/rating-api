@@ -26,6 +26,14 @@ GraphQL schema output is generated to `src/schema.gql` by `GraphQLModule.forRoot
 - `test/` - e2e Jest configuration and e2e test support.
 - `dist/` and `node_modules/` - generated/vendor output. Do not edit directly.
 
+## Domain Model Notes
+
+- Project membership is stored in `project_members`. Use it for project-level access, active membership checks, and rating-request recipients.
+- Sprints belong to projects through `sprints.project_id` when that column exists. Older data may infer the association from `CREATE_SPRINT` audit metadata.
+- The `sprint_members` table has been removed. Do not add `SprintMember` entities, DTOs, resolvers, repository injections, GraphQL types, or new queries against `sprint_members`.
+- `requestRating(sprintId)` should resolve the sprint's project, then send requests to active `project_members` for that project.
+- If a feature needs sprint-specific participation again, add a new explicit design and migration instead of restoring the old `sprint_members` model by default.
+
 ## Commands
 
 Install dependencies:
@@ -135,6 +143,8 @@ Keep `DB_SYNCHRONIZE` off unless explicitly doing local throwaway development. P
 - Include a rollback migration when the surrounding migration pattern includes one or when the change is risky.
 - Keep entity decorators, GraphQL decorators, and migrations aligned.
 - Avoid relying on TypeORM `synchronize` for shared or production database changes.
+- Keep `db/schema-from-entities.sql` and `db/seed-sample-data.sql` aligned with the active entities. They should not recreate removed tables.
+- Historical migrations can reference old tables, but current application code and fresh-database SQL should match the current model.
 
 ## Testing Guidance
 
