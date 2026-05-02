@@ -19,7 +19,6 @@ DROP TABLE IF EXISTS rating_requests CASCADE;
 DROP TABLE IF EXISTS secure_tokens CASCADE;
 DROP TABLE IF EXISTS email_logs CASCADE;
 DROP TABLE IF EXISTS questions CASCADE;
-DROP TABLE IF EXISTS sprint_members CASCADE;
 DROP TABLE IF EXISTS sprints CASCADE;
 DROP TABLE IF EXISTS project_members CASCADE;
 DROP TABLE IF EXISTS projects CASCADE;
@@ -69,14 +68,6 @@ CREATE TABLE sprints (
   name varchar NOT NULL,
   start_date date NOT NULL,
   end_date date NOT NULL
-);
-
-CREATE TABLE sprint_members (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  sprint_id uuid NOT NULL REFERENCES sprints(id) ON DELETE CASCADE,
-  project_id uuid NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  CONSTRAINT uq_sprint_member UNIQUE (sprint_id, user_id)
 );
 
 CREATE TABLE questions (
@@ -160,9 +151,6 @@ CREATE INDEX idx_users_role_id ON users(role_id);
 CREATE INDEX idx_project_members_project_id ON project_members(project_id);
 CREATE INDEX idx_project_members_user_id ON project_members(user_id);
 CREATE INDEX idx_project_members_role_id ON project_members(role_id);
-CREATE INDEX idx_sprint_members_sprint_id ON sprint_members(sprint_id);
-CREATE INDEX idx_sprint_members_project_id ON sprint_members(project_id);
-CREATE INDEX idx_sprint_members_user_id ON sprint_members(user_id);
 CREATE INDEX idx_questions_role_id ON questions(role_id);
 CREATE INDEX idx_questions_project_id ON questions(project_id);
 CREATE INDEX idx_questions_sprint_id ON questions(sprint_id);

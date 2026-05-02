@@ -1,21 +1,22 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module } from "@nestjs/common";
+import { TypeOrmModule } from "@nestjs/typeorm";
 import {
   AggregatedRating,
   OverallRating,
+  ProjectMember,
   Question,
   Rating,
   RatingAnswer,
   RatingRequest,
-  SprintMember,
+  Sprint,
   User,
-} from '../database/entities';
-import { RatingsResolver } from './resolvers/ratings.resolver';
-import { RatingsService } from './services/ratings.service';
-import { AuditModule } from '../audit/audit.module';
-import { AuthModule } from '../auth/auth.module';
-import { EmailModule } from '../email/email.module';
-import { RbacModule } from '../rbac/rbac.module';
+} from "../database/entities";
+import { RatingsResolver } from "./resolvers/ratings.resolver";
+import { RatingsService } from "./services/ratings.service";
+import { AuditModule } from "../audit/audit.module";
+import { AuthModule } from "../auth/auth.module";
+import { EmailModule } from "../email/email.module";
+import { RbacModule } from "../rbac/rbac.module";
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { RbacModule } from '../rbac/rbac.module';
       RatingAnswer,
       Question,
       User,
-      SprintMember,
+      Sprint,
+      ProjectMember,
       RatingRequest,
       AggregatedRating,
       OverallRating,

@@ -1,4 +1,4 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Field, ID, ObjectType } from "@nestjs/graphql";
 import {
   Column,
   Entity,
@@ -6,20 +6,19 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-} from 'typeorm';
-import { Role } from './role.entity';
-import { ProjectMember } from './project-member.entity';
-import { SprintMember } from './sprint-member.entity';
-import { Rating } from './rating.entity';
-import { AggregatedRating } from './aggregated-rating.entity';
-import { OverallRating } from './overall-rating.entity';
-import { SecureToken } from './secure-token.entity';
+} from "typeorm";
+import { Role } from "./role.entity";
+import { ProjectMember } from "./project-member.entity";
+import { Rating } from "./rating.entity";
+import { AggregatedRating } from "./aggregated-rating.entity";
+import { OverallRating } from "./overall-rating.entity";
+import { SecureToken } from "./secure-token.entity";
 
 @ObjectType()
-@Entity('users')
+@Entity("users")
 export class User {
   @Field(() => ID)
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Field()
@@ -27,7 +26,7 @@ export class User {
   email: string;
 
   @Field()
-  @Column({ name: 'name' })
+  @Column({ name: "name" })
   fullName: string;
 
   @Field()
@@ -36,23 +35,20 @@ export class User {
   }
 
   @Field()
-  @Column({ name: 'is_active', default: true })
+  @Column({ name: "is_active", default: true })
   isActive: boolean;
 
   @Field(() => Role)
   @ManyToOne(() => Role, (role) => role.users, { eager: true })
-  @JoinColumn({ name: 'role_id' })
+  @JoinColumn({ name: "role_id" })
   role: Role;
 
-  @Column({ name: 'role_id' })
+  @Column({ name: "role_id" })
   @Field()
   roleId: string;
 
   @OneToMany(() => ProjectMember, (member) => member.user)
   projectMemberships: ProjectMember[];
-
-  @OneToMany(() => SprintMember, (member) => member.user)
-  sprintMemberships: SprintMember[];
 
   @OneToMany(() => Rating, (rating) => rating.rater)
   ratingsGiven: Rating[];

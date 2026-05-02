@@ -1,15 +1,14 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { SprintMember } from './sprint-member.entity';
-import { Rating } from './rating.entity';
-import { AggregatedRating } from './aggregated-rating.entity';
-import { Question } from './question.entity';
+import { Field, ID, ObjectType } from "@nestjs/graphql";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Rating } from "./rating.entity";
+import { AggregatedRating } from "./aggregated-rating.entity";
+import { Question } from "./question.entity";
 
 @ObjectType()
-@Entity('sprints')
+@Entity("sprints")
 export class Sprint {
   @Field(() => ID)
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Field()
@@ -17,15 +16,12 @@ export class Sprint {
   name: string;
 
   @Field()
-  @Column({ type: 'date', name: 'start_date' })
+  @Column({ type: "date", name: "start_date" })
   startDate: string;
 
   @Field()
-  @Column({ type: 'date', name: 'end_date' })
+  @Column({ type: "date", name: "end_date" })
   endDate: string;
-
-  @OneToMany(() => SprintMember, (member) => member.sprint)
-  members: SprintMember[];
 
   @OneToMany(() => Rating, (rating) => rating.sprint)
   ratings: Rating[];

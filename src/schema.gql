@@ -8,12 +8,6 @@ input AddProjectMembersInput {
   userIds: [String!]!
 }
 
-input AddSprintMembersInput {
-  projectId: String
-  sprintId: String!
-  userIds: [String!]!
-}
-
 input CreateProjectInput {
   description: String
   name: String!
@@ -49,7 +43,6 @@ input DeleteUserInput {
 
 type Mutation {
   addProjectMembers(input: AddProjectMembersInput!): [ProjectMember!]!
-  addSprintMembers(input: AddSprintMembersInput!): [SprintMember!]!
   createProject(input: CreateProjectInput!): Project!
   createQuestion(input: CreateQuestionInput!): Question!
   createSprint(input: CreateSprintInput!): Sprint!
@@ -87,7 +80,6 @@ type Query {
   getProjects: [Project!]!
   getQuestionsByRole(roleId: String!): [Question!]!
   getRoles: [Role!]!
-  getSprintMembers(sprintId: String!): [SprintMember!]!
   getSprintRatings(sprintId: String!): [SprintRatingOutput!]!
   getSprints(projectId: String!): [Sprint!]!
   getUser(userId: String!): User!
@@ -134,12 +126,6 @@ type Sprint {
   id: ID!
   name: String!
   startDate: String!
-}
-
-type SprintMember {
-  id: ID!
-  projectId: String!
-  user: User!
 }
 
 type SprintRatingOutput {

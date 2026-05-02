@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import databaseConfig from './database.config';
+import { Module } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
+import databaseConfig from "./database.config";
 import {
   AggregatedRating,
   AuditLog,
@@ -16,9 +16,8 @@ import {
   Role,
   SecureToken,
   Sprint,
-  SprintMember,
   User,
-} from './entities';
+} from "./entities";
 
 @Module({
   imports: [
@@ -26,22 +25,31 @@ import {
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService): TypeOrmModuleOptions => {
-        const databaseUrl = configService.get<string>('database.url');
-        const sslEnabled = configService.get<boolean>('database.ssl');
+        const databaseUrl = configService.get<string>("database.url");
+        const sslEnabled = configService.get<boolean>("database.ssl");
 
         return {
-          type: 'postgres',
+          type: "postgres",
           ...(databaseUrl
             ? { url: databaseUrl }
             : {
-                host: configService.get<string>('database.host', 'localhost'),
-                port: configService.get<number>('database.port', 5432),
-                username: configService.get<string>('database.username', 'postgres'),
-                password: configService.get<string>('database.password', 'postgres'),
-                database: configService.get<string>('database.database', 'srs'),
+                host: configService.get<string>("database.host", "localhost"),
+                port: configService.get<number>("database.port", 5432),
+                username: configService.get<string>(
+                  "database.username",
+                  "postgres",
+                ),
+                password: configService.get<string>(
+                  "database.password",
+                  "postgres",
+                ),
+                database: configService.get<string>("database.database", "srs"),
               }),
-          synchronize: configService.get<boolean>('database.synchronize', false),
-          logging: configService.get<boolean>('database.logging', false),
+          synchronize: configService.get<boolean>(
+            "database.synchronize",
+            false,
+          ),
+          logging: configService.get<boolean>("database.logging", false),
           ssl: sslEnabled ? { rejectUnauthorized: false } : false,
           entities: [
             Role,
@@ -49,7 +57,6 @@ import {
             Project,
             ProjectMember,
             Sprint,
-            SprintMember,
             Question,
             RatingRequest,
             Rating,
