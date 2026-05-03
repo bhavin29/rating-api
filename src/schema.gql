@@ -116,7 +116,9 @@ input RatingAnswerInput {
 }
 
 type RatingQuestion {
+  answer: String
   id: String!
+  rating: Int
   ratingByUserId: String!
   ratingByUserName: String!
   ratingByUserRole: String!

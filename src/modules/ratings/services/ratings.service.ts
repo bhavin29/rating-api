@@ -192,9 +192,20 @@ export class RatingsService {
       throw new BadRequestException('No sprint rating updates provided');
     }
 
-    const payload = items
+    this.logger.debug(
+      `updateSprintRatingRequests received ${items.length} item(s): ${JSON.stringify(items)}`,
+    );
+
+    const normalizedItems = items.map((item) => ({
+      original: item,
+      spr_id: item.sprId || (item as any).spr_id,
+      rating: item.rating,
+      answer: item.answer,
+    }));
+
+    const payload = normalizedItems
       .map((item) => ({
-        spr_id: item.sprId,
+        spr_id: item.spr_id,
         rating: item.rating,
         answer: item.answer,
       }))
@@ -206,6 +217,9 @@ export class RatingsService {
       );
 
     if (payload.length === 0) {
+      this.logger.warn(
+        `updateSprintRatingRequests rejected all items; normalized payload=${JSON.stringify(payload)}`,
+      );
       throw new BadRequestException(
         'At least one valid sprint rating update item with spr_id is required',
       );
@@ -336,6 +350,8 @@ export class RatingsService {
         id: row.question_id || row.id || '',
         sprId: row.spr_id || '',
         text: row.question_text,
+        rating: row.rating ?? row.question_rating ?? undefined,
+        answer: row.answer ?? row.answer_text ?? row.question_answer ?? undefined,
         ratingByUserId: row.rating_by_user_id || '',
         ratingByUserName: row.rating_by_user_name,
         ratingByUserRole: row.rating_by_user_role,
