@@ -6,6 +6,9 @@ export class RatingQuestion {
   id: string;
 
   @Field()
+  sprId: string;
+
+  @Field()
   text: string;
 
   @Field()

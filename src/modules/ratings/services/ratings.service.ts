@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from "@nestjs/common";
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
@@ -21,11 +22,14 @@ import { AuditService } from "../../audit/services/audit.service";
 import { AuthService } from "../../auth/services/auth.service";
 import { EmailService } from "../../email/services/email.service";
 import { SubmitRatingInput } from "../dto/submit-rating.input";
+import { UpdateSprintRatingItemInput } from "../dto/update-sprint-rating.input";
 import { SprintRatingOutput } from "../dto/sprint-rating.output";
 import { SprintRatingRequestOutput, RatingQuestion } from "../dto/sprint-rating-request.output";
 
 @Injectable()
 export class RatingsService {
+  private readonly logger = new Logger(RatingsService.name);
+
   constructor(
     @InjectRepository(Rating)
     private readonly ratingRepository: Repository<Rating>,
@@ -181,6 +185,51 @@ export class RatingsService {
     }));
   }
 
+  async updateSprintRatingRequests(
+    items: UpdateSprintRatingItemInput[],
+  ): Promise<{ status: string; message: string }> {
+    if (!Array.isArray(items) || items.length === 0) {
+      throw new BadRequestException('No sprint rating updates provided');
+    }
+
+    const payload = items
+      .map((item) => ({
+        spr_id: item.sprId,
+        rating: item.rating,
+        answer: item.answer,
+      }))
+      .filter(
+        (item) =>
+          item.spr_id &&
+          (item.rating === undefined ||
+            (Number.isInteger(item.rating) && item.rating >= 1 && item.rating <= 10)),
+      );
+
+    if (payload.length === 0) {
+      throw new BadRequestException(
+        'At least one valid sprint rating update item with spr_id is required',
+      );
+    }
+
+    if (payload.length !== items.length) {
+      this.logger.warn(
+        `Skipped ${items.length - payload.length} invalid sprint rating item(s)`,
+      );
+    }
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.query(
+        `SELECT public.update_sprint_rating_request($1::jsonb)`,
+        [JSON.stringify(payload)],
+      );
+    });
+
+    return {
+      status: 'success',
+      message: 'Sprint ratings updated successfully',
+    };
+  }
+
   private async recomputeAggregates(
     manager: EntityManager,
     sprintId: string,
@@ -285,6 +334,7 @@ export class RatingsService {
       // Group questions from all rows
       const questions: RatingQuestion[] = rows.map((row: any) => ({
         id: row.question_id || row.id || '',
+        sprId: row.spr_id || '',
         text: row.question_text,
         ratingByUserId: row.rating_by_user_id || '',
         ratingByUserName: row.rating_by_user_name,

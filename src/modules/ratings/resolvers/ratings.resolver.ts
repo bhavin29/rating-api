@@ -5,6 +5,8 @@ import { UserAuthGuard } from '../../auth/guards/user-auth.guard';
 import { RbacGuard } from '../../rbac/guards/rbac.guard';
 import { RequirePermissions } from '../../rbac/decorators/require-permissions.decorator';
 import { SubmitRatingInput } from '../dto/submit-rating.input';
+import { UpdateSprintRatingItemInput } from '../dto/update-sprint-rating.input';
+import { UpdateSprintRatingResponse } from '../dto/update-sprint-rating.response';
 import { SprintRatingOutput } from '../dto/sprint-rating.output';
 import { SprintRatingRequestOutput } from '../dto/sprint-rating-request.output';
 import { GenerateSprintRatingRequestArgs } from '../dto/generate-sprint-rating-request.input';
@@ -24,6 +26,16 @@ export class RatingsResolver {
   @Mutation(() => Rating)
   submitRating(@Args('input') input: SubmitRatingInput): Promise<Rating> {
     return this.ratingsService.submitRating(input);
+  }
+
+  @Mutation(() => UpdateSprintRatingResponse)
+  @UseGuards(UserAuthGuard, RbacGuard)
+  @RequirePermissions('rating:update')
+  updateSprintRatingRequests(
+    @Args({ name: 'input', type: () => [UpdateSprintRatingItemInput] })
+    input: UpdateSprintRatingItemInput[],
+  ): Promise<UpdateSprintRatingResponse> {
+    return this.ratingsService.updateSprintRatingRequests(input);
   }
 
   @Query(() => [SprintRatingOutput])

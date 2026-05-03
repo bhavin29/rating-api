@@ -59,6 +59,7 @@ type Mutation {
   updateProjectMemberStatus(input: UpdateProjectMemberStatusInput!): ProjectMember!
   updateQuestion(input: UpdateQuestionInput!): Question!
   updateSprint(input: UpdateSprintInput!): Sprint!
+  updateSprintRatingRequests(input: [UpdateSprintRatingItemInput!]!): UpdateSprintRatingResponse!
   updateUser(input: UpdateUserInput!): User!
   validateToken(input: ValidateTokenInput!): TokenValidationPayload!
 }
@@ -119,6 +120,7 @@ type RatingQuestion {
   ratingByUserId: String!
   ratingByUserName: String!
   ratingByUserRole: String!
+  sprId: String!
   text: String!
 }
 
@@ -200,6 +202,17 @@ input UpdateSprintInput {
   name: String!
   sprintId: String!
   startDate: String!
+}
+
+input UpdateSprintRatingItemInput {
+  answer: String
+  rating: Int
+  spr_id: String!
+}
+
+type UpdateSprintRatingResponse {
+  message: String!
+  status: String!
 }
 
 input UpdateUserInput {
