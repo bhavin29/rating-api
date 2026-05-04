@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, Float, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
 export class RatingQuestion {
@@ -11,8 +11,11 @@ export class RatingQuestion {
   @Field()
   text: string;
 
-  @Field(() => Int, { nullable: true })
+  @Field(() => Float, { nullable: true })
   rating?: number;
+
+  @Field({ nullable: true })
+  helperText?: string;
 
   @Field({ nullable: true })
   answer?: string;

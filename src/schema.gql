@@ -117,8 +117,9 @@ input RatingAnswerInput {
 
 type RatingQuestion {
   answer: String
+  helperText: String
   id: String!
-  rating: Int
+  rating: Float
   ratingByUserId: String!
   ratingByUserName: String!
   ratingByUserRole: String!
@@ -208,7 +209,7 @@ input UpdateSprintInput {
 
 input UpdateSprintRatingItemInput {
   answer: String
-  rating: Int
+  rating: Float
   spr_id: String!
 }
 

@@ -209,12 +209,17 @@ export class RatingsService {
         rating: item.rating,
         answer: item.answer,
       }))
-      .filter(
-        (item) =>
-          item.spr_id &&
-          (item.rating === undefined ||
-            (Number.isInteger(item.rating) && item.rating >= 1 && item.rating <= 10)),
-      );
+      .filter((item) => {
+        if (!item.spr_id) return false;
+        if (item.rating === undefined) return true;
+        return (
+          typeof item.rating === 'number' &&
+          Number.isFinite(item.rating) &&
+          item.rating >= 1 &&
+          item.rating <= 10 &&
+          Number.isInteger(item.rating * 2)
+        );
+      });
 
     if (payload.length === 0) {
       this.logger.warn(
@@ -351,6 +356,7 @@ export class RatingsService {
         sprId: row.spr_id || '',
         text: row.question_text,
         rating: row.rating ?? row.question_rating ?? undefined,
+        helperText: row.helper_text ?? row.helperText ?? undefined,
         answer: row.answer ?? row.answer_text ?? row.question_answer ?? undefined,
         ratingByUserId: row.rating_by_user_id || '',
         ratingByUserName: row.rating_by_user_name,

@@ -57,7 +57,7 @@ describe('RatingsService updateSprintRatingRequests', () => {
     const updates: UpdateSprintRatingItemInput[] = [
       {
         sprId: '50000000-0000-0000-0000-000000000001',
-        rating: 8,
+        rating: 8.5,
         answer: 'Good contribution',
       },
       {
@@ -83,7 +83,7 @@ describe('RatingsService updateSprintRatingRequests', () => {
         JSON.stringify([
           {
             spr_id: '50000000-0000-0000-0000-000000000001',
-            rating: 8,
+            rating: 8.5,
             answer: 'Good contribution',
           },
           {

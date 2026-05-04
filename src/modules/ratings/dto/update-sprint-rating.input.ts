@@ -1,5 +1,5 @@
-import { Field, InputType, Int } from '@nestjs/graphql';
-import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { Field, Float, InputType } from '@nestjs/graphql';
+import { IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { IsDbUuid } from '../../../common/validators/is-db-uuid.decorator';
 
 @InputType()
@@ -8,9 +8,9 @@ export class UpdateSprintRatingItemInput {
   @IsDbUuid()
   sprId: string;
 
-  @Field(() => Int, { nullable: true })
+  @Field(() => Float, { nullable: true })
   @IsOptional()
-  @IsInt()
+  @IsNumber({ allowInfinity: false, allowNaN: false })
   @Min(1)
   @Max(10)
   rating?: number;
