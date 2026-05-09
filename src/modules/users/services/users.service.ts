@@ -180,6 +180,25 @@ export class UsersService {
     return seededUsers;
   }
 
+  async generateAndSaveSecurityPin(userId: string): Promise<{ user: User; plainPin: string }> {
+    const user = await this.getById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const plainPin = generatePin();
+    user.securityCodeHash = await hash(plainPin, 10);
+    user.securityCodeEnabled = true;
+    user.failedSecurityAttempts = 0;
+    user.securityLockedUntil = null;
+    user.lastSecurityVerifiedAt = null;
+
+    return {
+      user: await this.userRepository.save(user),
+      plainPin,
+    };
+  }
+
   async verifySecurityPin(userId: string, inputPin: string): Promise<boolean> {
     const user = await this.getById(userId);
     if (!user) {

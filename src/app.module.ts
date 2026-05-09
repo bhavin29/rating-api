@@ -12,6 +12,7 @@ import { RatingsModule } from './modules/ratings/ratings.module';
 import { EmailModule } from './modules/email/email.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { RbacModule } from './modules/rbac/rbac.module';
+import { SprintFeedbackModule } from './modules/sprint-feedback/sprint-feedback.module';
 import { UsersModule } from './modules/users/users.module';
 import databaseConfig from './modules/database/database.config';
 import { DatabaseModule } from './modules/database/database.module';
@@ -38,6 +39,7 @@ import { DatabaseModule } from './modules/database/database.module';
     SprintsModule,
     QuestionsModule,
     RatingsModule,
+    SprintFeedbackModule,
     EmailModule,
     AuditModule,
     RbacModule,

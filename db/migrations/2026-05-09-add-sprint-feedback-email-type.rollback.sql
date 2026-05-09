@@ -1,0 +1,2 @@
+-- PostgreSQL does not support dropping a single enum value safely.
+-- Leave SPRINT_FEEDBACK in email_type_enum on rollback.

@@ -1,6 +1,7 @@
 export enum EmailType {
   INVITE = 'INVITE',
   REMINDER = 'REMINDER',
+  SPRINT_FEEDBACK = 'SPRINT_FEEDBACK',
 }
 
 export enum EmailStatus {
