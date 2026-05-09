@@ -45,7 +45,12 @@ CREATE TABLE users (
   email varchar NOT NULL UNIQUE,
   name varchar NOT NULL,
   is_active boolean NOT NULL DEFAULT true,
-  role_id uuid NOT NULL REFERENCES roles(id)
+  role_id uuid NOT NULL REFERENCES roles(id),
+  security_code_hash text NULL,
+  security_code_enabled boolean NOT NULL DEFAULT false,
+  failed_security_attempts integer NOT NULL DEFAULT 0,
+  security_locked_until timestamp NULL,
+  last_security_verified_at timestamp NULL
 );
 
 CREATE TABLE projects (
