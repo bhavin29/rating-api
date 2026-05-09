@@ -35,6 +35,7 @@ export class EmailService {
     const user = this.configService.get<string>('SMTP_USER');
     const pass = this.configService.get<string>('SMTP_PASSWORD');
     const from = this.configService.get<string>('SMTP_FROM') ?? user;
+    const bcc = this.parseEmailList(this.configService.get<string>('SMTP_BCC'));
 
     if (!from) {
       throw new Error('SMTP_FROM or SMTP_USER is required');
@@ -50,8 +51,18 @@ export class EmailService {
     await transport.sendMail({
       from,
       to: toEmail,
+      bcc,
       subject,
       text,
     });
+  }
+
+  private parseEmailList(value?: string): string[] | undefined {
+    const emails = value
+      ?.split(',')
+      .map((email) => email.trim())
+      .filter(Boolean);
+
+    return emails && emails.length > 0 ? emails : undefined;
   }
 }
