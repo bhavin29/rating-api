@@ -47,6 +47,21 @@ export class User {
   @Field()
   roleId: string;
 
+  @Column({ name: 'security_code_hash', type: 'text', nullable: true })
+  securityCodeHash: string | null;
+
+  @Column({ name: 'security_code_enabled', default: false })
+  securityCodeEnabled: boolean;
+
+  @Column({ name: 'failed_security_attempts', default: 0 })
+  failedSecurityAttempts: number;
+
+  @Column({ name: 'security_locked_until', type: 'timestamp', nullable: true })
+  securityLockedUntil: Date | null;
+
+  @Column({ name: 'last_security_verified_at', type: 'timestamp', nullable: true })
+  lastSecurityVerifiedAt: Date | null;
+
   @OneToMany(() => ProjectMember, (member) => member.user)
   projectMemberships: ProjectMember[];
 

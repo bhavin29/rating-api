@@ -5,8 +5,11 @@ import { UserAuthGuard } from '../../auth/guards/user-auth.guard';
 import { RbacGuard } from '../../rbac/guards/rbac.guard';
 import { RequirePermissions } from '../../rbac/decorators/require-permissions.decorator';
 import { CreateUserInput } from '../dto/create-user.input';
+import { CreateUserPayload } from '../dto/create-user.payload';
 import { DeleteUserInput } from '../dto/delete-user.input';
 import { UpdateUserInput } from '../dto/update-user.input';
+import { UserProjectSprintDataArgs } from '../dto/user-project-sprint-data.args';
+import { UserProjectSprintData } from '../dto/user-project-sprint-data.output';
 import { UsersService } from '../services/users.service';
 
 @Resolver(() => User)
@@ -32,9 +35,15 @@ export class UsersResolver {
     return this.usersService.getRoles();
   }
 
-  @Mutation(() => User)
+  @Query(() => [UserProjectSprintData])
+  @RequirePermissions('user:read')
+  getUserProjectSprintData(@Args() args: UserProjectSprintDataArgs): Promise<UserProjectSprintData[]> {
+    return this.usersService.getUserProjectSprintData(args.userId);
+  }
+
+  @Mutation(() => CreateUserPayload)
   @RequirePermissions('user:create')
-  createUser(@Args('input') input: CreateUserInput): Promise<User> {
+  createUser(@Args('input') input: CreateUserInput): Promise<CreateUserPayload> {
     return this.usersService.createUser(input);
   }
 

@@ -37,6 +37,11 @@ input CreateUserInput {
   roleId: String!
 }
 
+type CreateUserPayload {
+  plainPin: String!
+  user: User!
+}
+
 input DeleteUserInput {
   userId: String!
 }
@@ -47,7 +52,7 @@ type Mutation {
   createProject(input: CreateProjectInput!): Project!
   createQuestion(input: CreateQuestionInput!): Question!
   createSprint(input: CreateSprintInput!): Sprint!
-  createUser(input: CreateUserInput!): User!
+  createUser(input: CreateUserInput!): CreateUserPayload!
   deleteQuestion(id: String!): Boolean!
   deleteUser(input: DeleteUserInput!): Boolean!
   generatePeerRatings(sprintId: String!): Boolean!
@@ -87,6 +92,7 @@ type Query {
   getSprintRatings(sprintId: String!): [SprintRatingOutput!]!
   getSprints(projectId: String!): [Sprint!]!
   getUser(userId: String!): User!
+  getUserProjectSprintData(userId: String!): [UserProjectSprintData!]!
   getUsers: [User!]!
   question(id: String!): Question!
   questions(isActive: Boolean, projectId: String, roleId: String, search: String, skip: Int = 0, sprintId: String, take: Int = 20): [Question!]!
@@ -235,6 +241,18 @@ type User {
   name: String!
   role: Role!
   roleId: String!
+}
+
+type UserProjectSprintData {
+  projectId: ID!
+  projectName: String!
+  sprintEndDate: String!
+  sprintId: ID!
+  sprintName: String!
+  sprintProjectMemberId: ID!
+  sprintStartDate: String!
+  userId: ID!
+  userName: String!
 }
 
 input ValidateTokenInput {
