@@ -118,7 +118,7 @@ type Rating {
 
 input RatingAnswerInput {
   questionId: String!
-  score: Int!
+  score: Float!
 }
 
 type RatingQuestion {

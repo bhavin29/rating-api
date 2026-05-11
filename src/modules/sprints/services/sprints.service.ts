@@ -89,7 +89,10 @@ export class SprintsService {
     return sprint;
   }
 
-  async updateSprint(input: UpdateSprintInput): Promise<Sprint> {
+  async updateSprint(
+    input: UpdateSprintInput,
+    actorId: string,
+  ): Promise<Sprint> {
     this.validateSprintDateRange(input.startDate, input.endDate);
 
     const sprint = await this.sprintRepository.findOne({
@@ -103,7 +106,11 @@ export class SprintsService {
     sprint.startDate = input.startDate;
     sprint.endDate = input.endDate;
 
-    return this.sprintRepository.save(sprint);
+    const updatedSprint = await this.sprintRepository.save(sprint);
+    await this.auditService.log(AuditAction.UPDATE_SPRINT, actorId, {
+      sprintId: updatedSprint.id,
+    });
+    return updatedSprint;
   }
 
   private validateSprintDateRange(startDate: string, endDate: string): void {
@@ -126,11 +133,19 @@ export class SprintsService {
     return this.sprintProjectColumnExists;
   }
 
-  async assignProjectMembersToSprint(sprintId: string): Promise<boolean> {
+  async assignProjectMembersToSprint(
+    sprintId: string,
+    actorId: string,
+  ): Promise<boolean> {
     try {
       await this.dataSource.query(
         `SELECT assign_project_members_to_sprint($1)`,
         [sprintId],
+      );
+      await this.auditService.log(
+        AuditAction.ASSIGN_PROJECT_MEMBERS_TO_SPRINT,
+        actorId,
+        { sprintId },
       );
       return true;
     } catch (error) {
@@ -145,12 +160,17 @@ export class SprintsService {
     }
   }
 
-  async generatePeerRatings(sprintId: string): Promise<boolean> {
+  async generatePeerRatings(
+    sprintId: string,
+    actorId: string,
+  ): Promise<boolean> {
     try {
-      await this.dataSource.query(
-        `SELECT generate_peer_ratings($1)`,
-        [sprintId],
-      );
+      await this.dataSource.query(`SELECT generate_peer_ratings($1)`, [
+        sprintId,
+      ]);
+      await this.auditService.log(AuditAction.GENERATE_PEER_RATINGS, actorId, {
+        sprintId,
+      });
       return true;
     } catch (error) {
       if (error instanceof Error) {

@@ -1,14 +1,21 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, IsNull, Repository } from 'typeorm';
-import { compare, hash } from 'bcryptjs';
-import { Project, ProjectMember, Role, User } from '../../database/entities';
-import { generatePin } from '../../../common/security-pin.util';
-import { CreateUserInput } from '../dto/create-user.input';
-import { CreateUserPayload } from '../dto/create-user.payload';
-import { DeleteUserInput } from '../dto/delete-user.input';
-import { UpdateUserInput } from '../dto/update-user.input';
-import { UserProjectSprintData } from '../dto/user-project-sprint-data.output';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { DataSource, IsNull, Repository } from "typeorm";
+import { compare, hash } from "bcryptjs";
+import { AuditAction } from "../../../common/enums";
+import { AuditService } from "../../audit/services/audit.service";
+import { Project, ProjectMember, Role, User } from "../../database/entities";
+import { generatePin } from "../../../common/security-pin.util";
+import { CreateUserInput } from "../dto/create-user.input";
+import { CreateUserPayload } from "../dto/create-user.payload";
+import { DeleteUserInput } from "../dto/delete-user.input";
+import { UpdateUserInput } from "../dto/update-user.input";
+import { UserProjectSprintData } from "../dto/user-project-sprint-data.output";
 
 type UserProjectSprintDataRow = {
   user_id: string;
@@ -27,31 +34,36 @@ export class UsersService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(Role) private readonly roleRepository: Repository<Role>,
-    @InjectRepository(Project) private readonly projectRepository: Repository<Project>,
-    @InjectRepository(ProjectMember) private readonly projectMemberRepository: Repository<ProjectMember>,
+    @InjectRepository(Project)
+    private readonly projectRepository: Repository<Project>,
+    @InjectRepository(ProjectMember)
+    private readonly projectMemberRepository: Repository<ProjectMember>,
     private readonly dataSource: DataSource,
+    private readonly auditService: AuditService,
   ) {}
 
   getUsers(): Promise<User[]> {
-    return this.userRepository.find({ order: { fullName: 'ASC' } });
+    return this.userRepository.find({ order: { fullName: "ASC" } });
   }
 
   async getUser(id: string): Promise<User> {
     const user = await this.getById(id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     return user;
   }
 
   getRoles(): Promise<Role[]> {
-    return this.roleRepository.find({ order: { name: 'ASC' } });
+    return this.roleRepository.find({ order: { name: "ASC" } });
   }
 
-  async getUserProjectSprintData(userId: string): Promise<UserProjectSprintData[]> {
+  async getUserProjectSprintData(
+    userId: string,
+  ): Promise<UserProjectSprintData[]> {
     const rows = await this.dataSource.query<UserProjectSprintDataRow[]>(
-      'SELECT * FROM public.generate_user_project_sprint_data($1)',
+      "SELECT * FROM public.generate_user_project_sprint_data($1)",
       [userId],
     );
 
@@ -69,21 +81,31 @@ export class UsersService {
   }
 
   getById(id: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { id }, relations: { role: true } });
+    return this.userRepository.findOne({
+      where: { id },
+      relations: { role: true },
+    });
   }
 
-  async createUser(input: CreateUserInput): Promise<CreateUserPayload> {
+  async createUser(
+    input: CreateUserInput,
+    actorId: string,
+  ): Promise<CreateUserPayload> {
     const email = this.normalizeEmail(input.email);
     const fullName = this.resolveUserName(input.fullName, input.name);
 
-    const existingUser = await this.userRepository.findOne({ where: { email } });
+    const existingUser = await this.userRepository.findOne({
+      where: { email },
+    });
     if (existingUser) {
-      throw new ConflictException('User with this email already exists');
+      throw new ConflictException("User with this email already exists");
     }
 
-    const role = await this.roleRepository.findOne({ where: { id: input.roleId } });
+    const role = await this.roleRepository.findOne({
+      where: { id: input.roleId },
+    });
     if (!role) {
-      throw new NotFoundException('Role not found');
+      throw new NotFoundException("Role not found");
     }
 
     const plainPin = generatePin();
@@ -106,9 +128,16 @@ export class UsersService {
       await this.addUserToProject(input.projectId, user.id);
     }
 
+    await this.auditService.log(AuditAction.CREATE_USER, actorId, {
+      userId: user.id,
+      roleId: user.roleId,
+      projectId: input.projectId ?? null,
+      isActive: user.isActive,
+    });
+
     const createdUser = await this.getById(user.id);
     if (!createdUser) {
-      throw new NotFoundException('Created user not found');
+      throw new NotFoundException("Created user not found");
     }
 
     return {
@@ -117,18 +146,21 @@ export class UsersService {
     };
   }
 
-  async updateUser(input: UpdateUserInput): Promise<User> {
+  async updateUser(input: UpdateUserInput, actorId: string): Promise<User> {
     const user = await this.getById(input.userId);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
-    const email = input.email !== undefined ? this.normalizeEmail(input.email) : undefined;
+    const email =
+      input.email !== undefined ? this.normalizeEmail(input.email) : undefined;
 
     if (email && email !== user.email) {
-      const existingUser = await this.userRepository.findOne({ where: { email } });
+      const existingUser = await this.userRepository.findOne({
+        where: { email },
+      });
       if (existingUser) {
-        throw new ConflictException('User with this email already exists');
+        throw new ConflictException("User with this email already exists");
       }
       user.email = email;
     }
@@ -138,9 +170,11 @@ export class UsersService {
     }
 
     if (input.roleId) {
-      const role = await this.roleRepository.findOne({ where: { id: input.roleId } });
+      const role = await this.roleRepository.findOne({
+        where: { id: input.roleId },
+      });
       if (!role) {
-        throw new NotFoundException('Role not found');
+        throw new NotFoundException("Role not found");
       }
       user.roleId = input.roleId;
       user.role = role;
@@ -150,21 +184,35 @@ export class UsersService {
       user.isActive = input.isActive;
     }
 
-    return this.userRepository.save(user);
+    const updatedUser = await this.userRepository.save(user);
+    await this.auditService.log(AuditAction.UPDATE_USER, actorId, {
+      userId: updatedUser.id,
+      roleId: updatedUser.roleId,
+      isActive: updatedUser.isActive,
+    });
+    return updatedUser;
   }
 
-  async deleteUser(input: DeleteUserInput): Promise<boolean> {
+  async deleteUser(input: DeleteUserInput, actorId: string): Promise<boolean> {
     const user = await this.getById(input.userId);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     await this.userRepository.remove(user);
+    await this.auditService.log(AuditAction.DELETE_USER, actorId, {
+      userId: input.userId,
+      roleId: user.roleId,
+    });
     return true;
   }
 
-  async seedSecurityPinsForExistingUsers(): Promise<Array<{ userId: string; pin: string }>> {
-    const usersWithoutPin = await this.userRepository.find({ where: { securityCodeHash: IsNull() } });
+  async seedSecurityPinsForExistingUsers(): Promise<
+    Array<{ userId: string; pin: string }>
+  > {
+    const usersWithoutPin = await this.userRepository.find({
+      where: { securityCodeHash: IsNull() },
+    });
     const seededUsers: Array<{ userId: string; pin: string }> = [];
 
     for (const user of usersWithoutPin) {
@@ -174,16 +222,23 @@ export class UsersService {
       user.failedSecurityAttempts = 0;
       user.securityLockedUntil = null;
       await this.userRepository.save(user);
+      await this.auditService.log(AuditAction.GENERATE_SECURITY_PIN, user.id, {
+        userId: user.id,
+        reason: "seed_missing_pin",
+      });
       seededUsers.push({ userId: user.id, pin });
     }
 
     return seededUsers;
   }
 
-  async generateAndSaveSecurityPin(userId: string): Promise<{ user: User; plainPin: string }> {
+  async generateAndSaveSecurityPin(
+    userId: string,
+    actorId?: string,
+  ): Promise<{ user: User; plainPin: string }> {
     const user = await this.getById(userId);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     const plainPin = generatePin();
@@ -193,8 +248,17 @@ export class UsersService {
     user.securityLockedUntil = null;
     user.lastSecurityVerifiedAt = null;
 
+    const updatedUser = await this.userRepository.save(user);
+    await this.auditService.log(
+      AuditAction.GENERATE_SECURITY_PIN,
+      actorId ?? userId,
+      {
+        userId,
+      },
+    );
+
     return {
-      user: await this.userRepository.save(user),
+      user: updatedUser,
       plainPin,
     };
   }
@@ -202,16 +266,20 @@ export class UsersService {
   async verifySecurityPin(userId: string, inputPin: string): Promise<boolean> {
     const user = await this.getById(userId);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     if (!user.securityCodeEnabled || !user.securityCodeHash) {
-      throw new BadRequestException('Security PIN is not enabled for this user');
+      throw new BadRequestException(
+        "Security PIN is not enabled for this user",
+      );
     }
 
     const now = new Date();
     if (user.securityLockedUntil && user.securityLockedUntil > now) {
-      throw new BadRequestException('Account is locked until ' + user.securityLockedUntil.toISOString());
+      throw new BadRequestException(
+        "Account is locked until " + user.securityLockedUntil.toISOString(),
+      );
     }
 
     const isValid = await compare(inputPin, user.securityCodeHash);
@@ -228,6 +296,9 @@ export class UsersService {
     user.securityLockedUntil = null;
     user.lastSecurityVerifiedAt = now;
     await this.userRepository.save(user);
+    await this.auditService.log(AuditAction.VERIFY_SECURITY_PIN, userId, {
+      userId,
+    });
     return true;
   }
 
@@ -238,23 +309,36 @@ export class UsersService {
   private resolveUserName(fullName?: string, name?: string): string {
     const resolvedName = (name ?? fullName)?.trim();
     if (!resolvedName) {
-      throw new BadRequestException('User name is required');
+      throw new BadRequestException("User name is required");
     }
 
     return resolvedName;
   }
 
   private async ensureProjectExists(projectId: string): Promise<void> {
-    const project = await this.projectRepository.findOne({ where: { id: projectId } });
+    const project = await this.projectRepository.findOne({
+      where: { id: projectId },
+    });
     if (!project) {
-      throw new NotFoundException('Project not found');
+      throw new NotFoundException("Project not found");
     }
   }
 
-  private async addUserToProject(projectId: string, userId: string): Promise<void> {
-    const existingMembership = await this.projectMemberRepository.findOne({ where: { projectId, userId } });
+  private async addUserToProject(
+    projectId: string,
+    userId: string,
+  ): Promise<void> {
+    const existingMembership = await this.projectMemberRepository.findOne({
+      where: { projectId, userId },
+    });
     if (!existingMembership) {
-      await this.projectMemberRepository.save(this.projectMemberRepository.create({ projectId, userId, isActive: true }));
+      await this.projectMemberRepository.save(
+        this.projectMemberRepository.create({
+          projectId,
+          userId,
+          isActive: true,
+        }),
+      );
     }
   }
 }

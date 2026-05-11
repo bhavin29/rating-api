@@ -1,23 +1,37 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
-import { Project, Question, Role, Sprint } from '../../database/entities';
-import { CreateQuestionInput } from '../dto/create-question.input';
-import { QuestionsQueryArgs } from '../dto/questions-query.args';
-import { ToggleQuestionStatusInput } from '../dto/toggle-question-status.input';
-import { UpdateQuestionInput } from '../dto/update-question.input';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { ILike, Repository } from "typeorm";
+import { AuditAction } from "../../../common/enums";
+import { AuditService } from "../../audit/services/audit.service";
+import { Project, Question, Role, Sprint } from "../../database/entities";
+import { CreateQuestionInput } from "../dto/create-question.input";
+import { QuestionsQueryArgs } from "../dto/questions-query.args";
+import { ToggleQuestionStatusInput } from "../dto/toggle-question-status.input";
+import { UpdateQuestionInput } from "../dto/update-question.input";
 
 @Injectable()
 export class QuestionsService {
   constructor(
-    @InjectRepository(Question) private readonly questionRepository: Repository<Question>,
+    @InjectRepository(Question)
+    private readonly questionRepository: Repository<Question>,
     @InjectRepository(Role) private readonly roleRepository: Repository<Role>,
-    @InjectRepository(Project) private readonly projectRepository: Repository<Project>,
-    @InjectRepository(Sprint) private readonly sprintRepository: Repository<Sprint>,
+    @InjectRepository(Project)
+    private readonly projectRepository: Repository<Project>,
+    @InjectRepository(Sprint)
+    private readonly sprintRepository: Repository<Sprint>,
+    private readonly auditService: AuditService,
   ) {}
 
   getQuestionsByRole(roleId: string): Promise<Question[]> {
-    return this.questionRepository.find({ where: { roleId, isActive: true }, order: { text: 'ASC' } });
+    return this.questionRepository.find({
+      where: { roleId, isActive: true },
+      order: { text: "ASC" },
+    });
   }
 
   getQuestions(args: QuestionsQueryArgs): Promise<Question[]> {
@@ -31,7 +45,7 @@ export class QuestionsService {
 
     return this.questionRepository.find({
       where,
-      order: { text: 'ASC' },
+      order: { text: "ASC" },
       skip: args.skip,
       take: args.take,
     });
@@ -40,13 +54,16 @@ export class QuestionsService {
   async getQuestionById(id: string): Promise<Question> {
     const question = await this.questionRepository.findOne({ where: { id } });
     if (!question) {
-      throw new NotFoundException('Question not found');
+      throw new NotFoundException("Question not found");
     }
 
     return question;
   }
 
-  async createQuestion(input: CreateQuestionInput): Promise<Question> {
+  async createQuestion(
+    input: CreateQuestionInput,
+    actorId: string,
+  ): Promise<Question> {
     await this.ensureRoleExists(input.roleId);
     await this.ensureProjectExists(input.projectId);
     await this.ensureSprintExists(input.sprintId);
@@ -59,10 +76,20 @@ export class QuestionsService {
       isActive: input.isActive ?? true,
     });
 
-    return this.questionRepository.save(question);
+    const createdQuestion = await this.questionRepository.save(question);
+    await this.auditService.log(AuditAction.CREATE_QUESTION, actorId, {
+      questionId: createdQuestion.id,
+      roleId: createdQuestion.roleId,
+      projectId: createdQuestion.projectId,
+      sprintId: createdQuestion.sprintId,
+    });
+    return createdQuestion;
   }
 
-  async updateQuestion(input: UpdateQuestionInput): Promise<Question> {
+  async updateQuestion(
+    input: UpdateQuestionInput,
+    actorId: string,
+  ): Promise<Question> {
     const question = await this.getQuestionById(input.id);
 
     if (input.roleId !== undefined) {
@@ -88,33 +115,60 @@ export class QuestionsService {
       question.isActive = input.isActive;
     }
 
-    return this.questionRepository.save(question);
+    const updatedQuestion = await this.questionRepository.save(question);
+    await this.auditService.log(AuditAction.UPDATE_QUESTION, actorId, {
+      questionId: updatedQuestion.id,
+      roleId: updatedQuestion.roleId,
+      projectId: updatedQuestion.projectId,
+      sprintId: updatedQuestion.sprintId,
+      isActive: updatedQuestion.isActive,
+    });
+    return updatedQuestion;
   }
 
-  async deleteQuestion(id: string): Promise<boolean> {
-    const question = await this.questionRepository.findOne({ where: { id }, relations: { answers: true } });
+  async deleteQuestion(id: string, actorId: string): Promise<boolean> {
+    const question = await this.questionRepository.findOne({
+      where: { id },
+      relations: { answers: true },
+    });
     if (!question) {
-      throw new NotFoundException('Question not found');
+      throw new NotFoundException("Question not found");
     }
 
     if (question.answers.length > 0) {
-      throw new ConflictException('Question cannot be deleted because it is used in ratings');
+      throw new ConflictException(
+        "Question cannot be deleted because it is used in ratings",
+      );
     }
 
     await this.questionRepository.remove(question);
+    await this.auditService.log(AuditAction.DELETE_QUESTION, actorId, {
+      questionId: id,
+      roleId: question.roleId,
+      projectId: question.projectId,
+      sprintId: question.sprintId,
+    });
     return true;
   }
 
-  async toggleQuestionStatus(input: ToggleQuestionStatusInput): Promise<Question> {
+  async toggleQuestionStatus(
+    input: ToggleQuestionStatusInput,
+    actorId: string,
+  ): Promise<Question> {
     const question = await this.getQuestionById(input.id);
     question.isActive = input.isActive;
-    return this.questionRepository.save(question);
+    const updatedQuestion = await this.questionRepository.save(question);
+    await this.auditService.log(AuditAction.TOGGLE_QUESTION_STATUS, actorId, {
+      questionId: updatedQuestion.id,
+      isActive: updatedQuestion.isActive,
+    });
+    return updatedQuestion;
   }
 
   private async ensureRoleExists(roleId: string): Promise<void> {
     const role = await this.roleRepository.findOne({ where: { id: roleId } });
     if (!role) {
-      throw new NotFoundException('Role not found');
+      throw new NotFoundException("Role not found");
     }
   }
 
@@ -123,9 +177,11 @@ export class QuestionsService {
       return;
     }
 
-    const project = await this.projectRepository.findOne({ where: { id: projectId } });
+    const project = await this.projectRepository.findOne({
+      where: { id: projectId },
+    });
     if (!project) {
-      throw new NotFoundException('Project not found');
+      throw new NotFoundException("Project not found");
     }
   }
 
@@ -134,16 +190,18 @@ export class QuestionsService {
       return;
     }
 
-    const sprint = await this.sprintRepository.findOne({ where: { id: sprintId } });
+    const sprint = await this.sprintRepository.findOne({
+      where: { id: sprintId },
+    });
     if (!sprint) {
-      throw new NotFoundException('Sprint not found');
+      throw new NotFoundException("Sprint not found");
     }
   }
 
   private normalizeQuestionText(text: string): string {
     const normalizedText = text.trim();
     if (!normalizedText) {
-      throw new BadRequestException('Question text is required');
+      throw new BadRequestException("Question text is required");
     }
 
     return normalizedText;

@@ -31,21 +31,34 @@ export class SprintsResolver {
 
   @Mutation(() => Sprint)
   @RequirePermissions("sprint:update")
-  updateSprint(@Args("input") input: UpdateSprintInput): Promise<Sprint> {
-    return this.sprintsService.updateSprint(input);
+  updateSprint(
+    @Args("input") input: UpdateSprintInput,
+    @Context() context: any,
+  ): Promise<Sprint> {
+    return this.sprintsService.updateSprint(input, context.req.user.id);
   }
 
   @Mutation(() => Boolean)
   @RequirePermissions("sprint:update")
   assignProjectMembersToSprint(
     @Args("sprintId") sprintId: string,
+    @Context() context: any,
   ): Promise<boolean> {
-    return this.sprintsService.assignProjectMembersToSprint(sprintId);
+    return this.sprintsService.assignProjectMembersToSprint(
+      sprintId,
+      context.req.user.id,
+    );
   }
 
   @Mutation(() => Boolean)
   @RequirePermissions("sprint:update")
-  generatePeerRatings(@Args("sprintId") sprintId: string): Promise<boolean> {
-    return this.sprintsService.generatePeerRatings(sprintId);
+  generatePeerRatings(
+    @Args("sprintId") sprintId: string,
+    @Context() context: any,
+  ): Promise<boolean> {
+    return this.sprintsService.generatePeerRatings(
+      sprintId,
+      context.req.user.id,
+    );
   }
 }

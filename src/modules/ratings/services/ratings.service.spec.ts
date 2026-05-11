@@ -1,13 +1,16 @@
-import { BadRequestException } from '@nestjs/common';
-import { RatingsService } from './ratings.service';
-import { UpdateSprintRatingItemInput } from '../dto/update-sprint-rating.input';
+import { BadRequestException } from "@nestjs/common";
+import { RatingsService } from "./ratings.service";
+import { UpdateSprintRatingItemInput } from "../dto/update-sprint-rating.input";
 
-describe('RatingsService updateSprintRatingRequests', () => {
+describe("RatingsService updateSprintRatingRequests", () => {
   const createService = () => {
     const queryMock = jest.fn().mockResolvedValue([]);
     const dataSource = {
-      transaction: jest.fn().mockImplementation(async (work) => work({ query: queryMock })),
+      transaction: jest
+        .fn()
+        .mockImplementation(async (work) => work({ query: queryMock })),
     } as any;
+    const auditService = { log: jest.fn() };
 
     const service = new RatingsService(
       null as any,
@@ -22,72 +25,85 @@ describe('RatingsService updateSprintRatingRequests', () => {
       dataSource,
       null as any,
       null as any,
-      null as any,
+      auditService as any,
     );
 
-    return { service, dataSource, queryMock };
+    return { service, auditService, dataSource, queryMock };
   };
 
-  it('throws when the payload is empty', async () => {
+  it("throws when the payload is empty", async () => {
     const { service } = createService();
 
-    await expect(service.updateSprintRatingRequests([])).rejects.toThrow(
-      new BadRequestException('No sprint rating updates provided'),
+    await expect(
+      service.updateSprintRatingRequests(
+        [],
+        "dddddddd-4444-4444-4444-444444444444",
+      ),
+    ).rejects.toThrow(
+      new BadRequestException("No sprint rating updates provided"),
     );
   });
 
-  it('throws when all items are invalid or empty', async () => {
+  it("throws when all items are invalid or empty", async () => {
     const { service } = createService();
 
     const updates: UpdateSprintRatingItemInput[] = [
-      { sprId: 'c0000000-0000-0000-0000-000000000000', rating: 0 },
-      { sprId: '', rating: 5 },
+      { sprId: "c0000000-0000-0000-0000-000000000000", rating: 0 },
+      { sprId: "", rating: 5 },
     ];
 
-    await expect(service.updateSprintRatingRequests(updates)).rejects.toThrow(
+    await expect(
+      service.updateSprintRatingRequests(
+        updates,
+        "dddddddd-4444-4444-4444-444444444444",
+      ),
+    ).rejects.toThrow(
       new BadRequestException(
-        'At least one valid sprint rating update item with spr_id is required',
+        "At least one valid sprint rating update item with spr_id is required",
       ),
     );
   });
 
-  it('calls the DB function with valid items and skips invalid entries', async () => {
+  it("calls the DB function with valid items and skips invalid entries", async () => {
     const { service, dataSource, queryMock } = createService();
 
     const updates: UpdateSprintRatingItemInput[] = [
       {
-        sprId: '50000000-0000-0000-0000-000000000001',
+        sprId: "50000000-0000-0000-0000-000000000001",
         rating: 8.5,
-        answer: 'Good contribution',
+        answer: "Good contribution",
       },
       {
-        sprId: '60000000-0000-0000-0000-000000000001',
+        sprId: "60000000-0000-0000-0000-000000000001",
         rating: 12,
-        answer: 'Invalid rating',
+        answer: "Invalid rating",
       },
       {
-        sprId: '70000000-0000-0000-0000-000000000001',
+        sprId: "70000000-0000-0000-0000-000000000001",
       },
     ];
 
-    const result = await service.updateSprintRatingRequests(updates);
+    const result = await service.updateSprintRatingRequests(
+      updates,
+      "dddddddd-4444-4444-4444-444444444444",
+    );
 
     expect(result).toEqual({
-      status: 'success',
-      message: 'Sprint ratings updated successfully',
+      status: "success",
+      message: "Sprint ratings updated successfully",
     });
     expect(dataSource.transaction).toHaveBeenCalled();
     expect(queryMock).toHaveBeenCalledWith(
-      'SELECT public.update_sprint_rating_request($1::jsonb)',
+      "SELECT public.update_sprint_rating_request($1::jsonb)",
       [
         JSON.stringify([
           {
-            spr_id: '50000000-0000-0000-0000-000000000001',
+            spr_id: "50000000-0000-0000-0000-000000000001",
             rating: 8.5,
-            answer: 'Good contribution',
+            answer: "Good contribution",
           },
           {
-            spr_id: '70000000-0000-0000-0000-000000000001',
+            spr_id: "70000000-0000-0000-0000-000000000001",
             rating: undefined,
             answer: undefined,
           },
@@ -96,27 +112,30 @@ describe('RatingsService updateSprintRatingRequests', () => {
     );
   });
 
-  it('allows items with only spr_id (no rating or answer)', async () => {
+  it("allows items with only spr_id (no rating or answer)", async () => {
     const { service, dataSource, queryMock } = createService();
 
     const updates: UpdateSprintRatingItemInput[] = [
       {
-        sprId: '80000000-0000-0000-0000-000000000001',
+        sprId: "80000000-0000-0000-0000-000000000001",
       },
     ];
 
-    const result = await service.updateSprintRatingRequests(updates);
+    const result = await service.updateSprintRatingRequests(
+      updates,
+      "dddddddd-4444-4444-4444-444444444444",
+    );
 
     expect(result).toEqual({
-      status: 'success',
-      message: 'Sprint ratings updated successfully',
+      status: "success",
+      message: "Sprint ratings updated successfully",
     });
     expect(queryMock).toHaveBeenCalledWith(
-      'SELECT public.update_sprint_rating_request($1::jsonb)',
+      "SELECT public.update_sprint_rating_request($1::jsonb)",
       [
         JSON.stringify([
           {
-            spr_id: '80000000-0000-0000-0000-000000000001',
+            spr_id: "80000000-0000-0000-0000-000000000001",
             rating: undefined,
             answer: undefined,
           },

@@ -1,8 +1,14 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { EmailStatus, EmailType } from '../../../common/enums';
-import { EmailService } from '../../email/services/email.service';
-import { UsersService } from '../../users/services/users.service';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { AuditAction, EmailStatus, EmailType } from "../../../common/enums";
+import { AuditService } from "../../audit/services/audit.service";
+import { EmailService } from "../../email/services/email.service";
+import { UsersService } from "../../users/services/users.service";
 
 @Injectable()
 export class SprintFeedbackService {
@@ -10,34 +16,76 @@ export class SprintFeedbackService {
     private readonly usersService: UsersService,
     private readonly emailService: EmailService,
     private readonly configService: ConfigService,
+    private readonly auditService: AuditService,
   ) {}
 
   async sendEmail(userId: string): Promise<{ ok: true }> {
-    const { user, plainPin } = await this.usersService.generateAndSaveSecurityPin(userId);
+    const { user, plainPin } =
+      await this.usersService.generateAndSaveSecurityPin(userId);
     const portalUrl = this.buildPortalUrl(user.id);
-    const organizationName = this.configService.get<string>('ORGANIZATION_NAME', 'Your Organization Name');
-    const subject = 'Sprint Feedback Login Details';
-    const body = this.buildEmailBody(user.name, portalUrl, plainPin, organizationName);
+    const organizationName = this.configService.get<string>(
+      "ORGANIZATION_NAME",
+      "Your Organization Name",
+    );
+    const subject = "Sprint Feedback Login Details";
+    const body = this.buildEmailBody(
+      user.name,
+      portalUrl,
+      plainPin,
+      organizationName,
+    );
 
     try {
       await this.emailService.sendEmail(user.email, subject, body);
-      await this.emailService.logEmail(user.email, EmailType.SPRINT_FEEDBACK, EmailStatus.SENT);
+      await this.emailService.logEmail(
+        user.email,
+        EmailType.SPRINT_FEEDBACK,
+        EmailStatus.SENT,
+      );
+      await this.auditService.log(
+        AuditAction.SEND_SPRINT_FEEDBACK_EMAIL,
+        userId,
+        {
+          userId,
+          emailStatus: EmailStatus.SENT,
+        },
+      );
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to send sprint feedback email';
-      await this.emailService.logEmail(user.email, EmailType.SPRINT_FEEDBACK, EmailStatus.FAILED, message);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to send sprint feedback email";
+      await this.emailService.logEmail(
+        user.email,
+        EmailType.SPRINT_FEEDBACK,
+        EmailStatus.FAILED,
+        message,
+      );
+      await this.auditService.log(
+        AuditAction.SEND_SPRINT_FEEDBACK_EMAIL,
+        userId,
+        {
+          userId,
+          emailStatus: EmailStatus.FAILED,
+          error: message,
+        },
+      );
       throw error;
     }
 
     return { ok: true };
   }
 
-  async verifyPin(userId: string, pin: string): Promise<{ success: boolean; message?: string }> {
+  async verifyPin(
+    userId: string,
+    pin: string,
+  ): Promise<{ success: boolean; message?: string }> {
     try {
       const isValid = await this.usersService.verifySecurityPin(userId, pin);
       if (!isValid) {
         return {
           success: false,
-          message: 'Invalid PIN',
+          message: "Invalid PIN",
         };
       }
 
@@ -46,15 +94,17 @@ export class SprintFeedbackService {
       if (error instanceof BadRequestException) {
         const response = error.getResponse();
         const message =
-          typeof response === 'object' && response !== null && 'message' in response
+          typeof response === "object" &&
+          response !== null &&
+          "message" in response
             ? String(response.message)
             : error.message;
 
-        if (message.startsWith('Account is locked until')) {
+        if (message.startsWith("Account is locked until")) {
           throw new HttpException(
             {
               success: false,
-              message: 'Too many failed attempts. Please try again later.',
+              message: "Too many failed attempts. Please try again later.",
             },
             HttpStatus.TOO_MANY_REQUESTS,
           );
@@ -71,11 +121,18 @@ export class SprintFeedbackService {
   }
 
   private buildPortalUrl(userId: string): string {
-    const portalBaseUrl = this.configService.get<string>('PORTAL_URL', 'http://localhost:3000').replace(/\/+$/, '');
+    const portalBaseUrl = this.configService
+      .get<string>("PORTAL_URL", "http://localhost:3000")
+      .replace(/\/+$/, "");
     return `${portalBaseUrl}/feedback-auth?user=${encodeURIComponent(userId)}`;
   }
 
-  private buildEmailBody(userName: string, portalUrl: string, securityPin: string, organizationName: string): string {
+  private buildEmailBody(
+    userName: string,
+    portalUrl: string,
+    securityPin: string,
+    organizationName: string,
+  ): string {
     return `Dear ${userName},
 
 You have been invited to provide Sprint Feedback for your team members.

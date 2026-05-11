@@ -24,7 +24,10 @@ import { EmailService } from "../../email/services/email.service";
 import { SubmitRatingInput } from "../dto/submit-rating.input";
 import { UpdateSprintRatingItemInput } from "../dto/update-sprint-rating.input";
 import { SprintRatingOutput } from "../dto/sprint-rating.output";
-import { SprintRatingRequestOutput, RatingQuestion } from "../dto/sprint-rating-request.output";
+import {
+  SprintRatingRequestOutput,
+  RatingQuestion,
+} from "../dto/sprint-rating-request.output";
 
 @Injectable()
 export class RatingsService {
@@ -54,7 +57,7 @@ export class RatingsService {
     private readonly auditService: AuditService,
   ) {}
 
-  async requestRating(sprintId: string): Promise<boolean> {
+  async requestRating(sprintId: string, actorId: string): Promise<boolean> {
     const projectId = await this.getSprintProjectId(sprintId);
     const members = await this.projectMemberRepository.find({
       where: { projectId, isActive: true },
@@ -81,6 +84,13 @@ export class RatingsService {
       // token persisted and intended for secure link delivery.
       void token;
     }
+
+    await this.auditService.log(AuditAction.REQUEST_RATING, actorId, {
+      sprintId,
+      projectId,
+      recipientCount: members.length,
+      recipientUserIds: members.map((member) => member.userId),
+    });
 
     return true;
   }
@@ -187,9 +197,10 @@ export class RatingsService {
 
   async updateSprintRatingRequests(
     items: UpdateSprintRatingItemInput[],
+    actorId: string,
   ): Promise<{ status: string; message: string }> {
     if (!Array.isArray(items) || items.length === 0) {
-      throw new BadRequestException('No sprint rating updates provided');
+      throw new BadRequestException("No sprint rating updates provided");
     }
 
     this.logger.debug(
@@ -213,11 +224,10 @@ export class RatingsService {
         if (!item.spr_id) return false;
         if (item.rating === undefined) return true;
         return (
-          typeof item.rating === 'number' &&
+          typeof item.rating === "number" &&
           Number.isFinite(item.rating) &&
           item.rating >= 1 &&
-          item.rating <= 10 &&
-          Number.isInteger(item.rating * 2)
+          item.rating <= 10
         );
       });
 
@@ -226,7 +236,7 @@ export class RatingsService {
         `updateSprintRatingRequests rejected all items; normalized payload=${JSON.stringify(payload)}`,
       );
       throw new BadRequestException(
-        'At least one valid sprint rating update item with spr_id is required',
+        "At least one valid sprint rating update item with spr_id is required",
       );
     }
 
@@ -243,9 +253,18 @@ export class RatingsService {
       );
     });
 
+    await this.auditService.log(
+      AuditAction.UPDATE_SPRINT_RATING_REQUESTS,
+      actorId,
+      {
+        updatedCount: payload.length,
+        sprintProjectMemberIds: payload.map((item) => item.spr_id),
+      },
+    );
+
     return {
-      status: 'success',
-      message: 'Sprint ratings updated successfully',
+      status: "success",
+      message: "Sprint ratings updated successfully",
     };
   }
 
@@ -352,13 +371,14 @@ export class RatingsService {
 
       // Group questions from all rows
       const questions: RatingQuestion[] = rows.map((row: any) => ({
-        id: row.question_id || row.id || '',
-        sprId: row.spr_id || '',
+        id: row.question_id || row.id || "",
+        sprId: row.spr_id || "",
         text: row.question_text,
         rating: row.rating ?? row.question_rating ?? undefined,
         helperText: row.helper_text ?? row.helperText ?? undefined,
-        answer: row.answer ?? row.answer_text ?? row.question_answer ?? undefined,
-        ratingByUserId: row.rating_by_user_id || '',
+        answer:
+          row.answer ?? row.answer_text ?? row.question_answer ?? undefined,
+        ratingByUserId: row.rating_by_user_id || "",
         ratingByUserName: row.rating_by_user_name,
         ratingByUserRole: row.rating_by_user_role,
       }));
@@ -377,9 +397,7 @@ export class RatingsService {
           `Failed to generate sprint rating request: ${error.message}`,
         );
       }
-      throw new BadRequestException(
-        "Failed to generate sprint rating request",
-      );
+      throw new BadRequestException("Failed to generate sprint rating request");
     }
   }
 
