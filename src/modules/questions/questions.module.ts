@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { Project, Question, Role, Sprint } from "../database/entities";
+import { AdminSession, Project, Question, Role, Sprint } from "../database/entities";
 import { AuthModule } from "../auth/auth.module";
 import { AuditModule } from "../audit/audit.module";
 import { RbacModule } from "../rbac/rbac.module";
@@ -9,7 +9,7 @@ import { QuestionsService } from "./services/questions.service";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Question, Role, Project, Sprint]),
+    TypeOrmModule.forFeature([AdminSession, Question, Role, Project, Sprint]),
     AuditModule,
     AuthModule,
     RbacModule,
