@@ -2,13 +2,57 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { randomBytes, createHash } from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { compare } from 'bcryptjs';
 import { TokenType } from '../../../common/enums';
-import { SecureToken } from '../../database/entities';
+import { AdminSession, AdminUser, SecureToken } from '../../database/entities';
+import { AdminLoginInput } from '../dto/admin-login.input';
+import { AdminLoginPayload } from '../dto/admin-login.payload';
 import { TokenValidationPayload } from '../dto/token-validation.payload';
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectRepository(SecureToken) private readonly tokenRepository: Repository<SecureToken>) {}
+  constructor(
+    @InjectRepository(SecureToken)
+    private readonly tokenRepository: Repository<SecureToken>,
+    @InjectRepository(AdminUser)
+    private readonly adminUserRepository: Repository<AdminUser>,
+    @InjectRepository(AdminSession)
+    private readonly adminSessionRepository: Repository<AdminSession>,
+  ) {}
+
+  async adminLogin(input: AdminLoginInput): Promise<AdminLoginPayload> {
+    const email = input.email.trim().toLowerCase();
+    const adminUser = await this.adminUserRepository.findOne({
+      where: { email },
+    });
+
+    if (!adminUser || !adminUser.isActive) {
+      throw new UnauthorizedException('Invalid admin credentials');
+    }
+
+    const passwordMatches = await compare(input.password, adminUser.passwordHash);
+    if (!passwordMatches) {
+      throw new UnauthorizedException('Invalid admin credentials');
+    }
+
+    const token = randomBytes(32).toString('hex');
+    await this.adminSessionRepository.save(
+      this.adminSessionRepository.create({
+        adminUserId: adminUser.id,
+        tokenHash: this.hashToken(token),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      }),
+    );
+
+    return {
+      token,
+      adminUser,
+    };
+  }
+
+  hashToken(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
+  }
 
   async generateMagicToken(userId: string, expiresInMinutes = 60): Promise<SecureToken> {
     const rawToken = randomBytes(32).toString('hex');

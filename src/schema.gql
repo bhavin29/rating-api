@@ -8,6 +8,23 @@ input AddProjectMembersInput {
   userIds: [String!]!
 }
 
+input AdminLoginInput {
+  email: String!
+  password: String!
+}
+
+type AdminLoginPayload {
+  adminUser: AdminUser!
+  token: String!
+}
+
+type AdminUser {
+  email: String!
+  fullName: String!
+  id: ID!
+  isActive: Boolean!
+}
+
 input CreateProjectInput {
   description: String
   name: String!
@@ -56,6 +73,7 @@ input DeleteUserInput {
 
 type Mutation {
   addProjectMembers(input: AddProjectMembersInput!): [ProjectMember!]!
+  adminLogin(input: AdminLoginInput!): AdminLoginPayload!
   assignProjectMembersToSprint(sprintId: String!): Boolean!
   createProject(input: CreateProjectInput!): Project!
   createQuestion(input: CreateQuestionInput!): Question!

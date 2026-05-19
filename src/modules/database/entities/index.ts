@@ -1,3 +1,5 @@
+export * from "./admin-session.entity";
+export * from "./admin-user.entity";
 export * from "./aggregated-rating.entity";
 export * from "./audit-log.entity";
 export * from "./email-log.entity";

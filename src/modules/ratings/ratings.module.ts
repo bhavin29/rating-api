@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import {
+  AdminSession,
   AggregatedRating,
   OverallRating,
   ProjectMember,
@@ -21,6 +22,7 @@ import { RbacModule } from "../rbac/rbac.module";
 @Module({
   imports: [
     TypeOrmModule.forFeature([
+      AdminSession,
       Rating,
       RatingAnswer,
       Question,

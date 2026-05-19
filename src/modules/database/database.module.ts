@@ -3,6 +3,8 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import databaseConfig from "./database.config";
 import {
+  AdminSession,
+  AdminUser,
   AggregatedRating,
   AuditLog,
   EmailLog,
@@ -52,6 +54,8 @@ import {
           logging: configService.get<boolean>("database.logging", false),
           ssl: sslEnabled ? { rejectUnauthorized: false } : false,
           entities: [
+            AdminSession,
+            AdminUser,
             Role,
             User,
             Project,

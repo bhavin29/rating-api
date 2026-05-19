@@ -1,6 +1,12 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { Project, ProjectMember, Role, User } from "../database/entities";
+import {
+  AdminSession,
+  Project,
+  ProjectMember,
+  Role,
+  User,
+} from "../database/entities";
 import { AuthModule } from "../auth/auth.module";
 import { AuditModule } from "../audit/audit.module";
 import { RbacModule } from "../rbac/rbac.module";
@@ -9,7 +15,7 @@ import { UsersService } from "./services/users.service";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Role, Project, ProjectMember]),
+    TypeOrmModule.forFeature([AdminSession, User, Role, Project, ProjectMember]),
     AuditModule,
     AuthModule,
     RbacModule,
