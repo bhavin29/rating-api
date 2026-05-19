@@ -21,6 +21,10 @@ input CreateQuestionInput {
   text: String!
 }
 
+input CreateRoleInput {
+  name: String!
+}
+
 input CreateSprintInput {
   endDate: String!
   name: String!
@@ -42,6 +46,10 @@ type CreateUserPayload {
   user: User!
 }
 
+input DeleteRoleInput {
+  roleId: String!
+}
+
 input DeleteUserInput {
   userId: String!
 }
@@ -51,9 +59,11 @@ type Mutation {
   assignProjectMembersToSprint(sprintId: String!): Boolean!
   createProject(input: CreateProjectInput!): Project!
   createQuestion(input: CreateQuestionInput!): Question!
+  createRole(input: CreateRoleInput!): Role!
   createSprint(input: CreateSprintInput!): Sprint!
   createUser(input: CreateUserInput!): CreateUserPayload!
   deleteQuestion(id: String!): Boolean!
+  deleteRole(input: DeleteRoleInput!): Boolean!
   deleteUser(input: DeleteUserInput!): Boolean!
   generatePeerRatings(sprintId: String!): Boolean!
   removeProjectMember(input: RemoveProjectMemberInput!): Boolean!
@@ -63,6 +73,7 @@ type Mutation {
   updateProject(input: UpdateProjectInput!): Project!
   updateProjectMemberStatus(input: UpdateProjectMemberStatusInput!): ProjectMember!
   updateQuestion(input: UpdateQuestionInput!): Question!
+  updateRole(input: UpdateRoleInput!): Role!
   updateSprint(input: UpdateSprintInput!): Sprint!
   updateSprintRatingRequests(input: [UpdateSprintRatingItemInput!]!): UpdateSprintRatingResponse!
   updateUser(input: UpdateUserInput!): User!
@@ -204,6 +215,11 @@ input UpdateQuestionInput {
   roleId: String
   sprintId: String
   text: String
+}
+
+input UpdateRoleInput {
+  name: String!
+  roleId: String!
 }
 
 input UpdateSprintInput {

@@ -11,9 +11,12 @@ import { AuditAction } from "../../../common/enums";
 import { AuditService } from "../../audit/services/audit.service";
 import { Project, ProjectMember, Role, User } from "../../database/entities";
 import { generatePin } from "../../../common/security-pin.util";
+import { CreateRoleInput } from "../dto/create-role.input";
 import { CreateUserInput } from "../dto/create-user.input";
 import { CreateUserPayload } from "../dto/create-user.payload";
+import { DeleteRoleInput } from "../dto/delete-role.input";
 import { DeleteUserInput } from "../dto/delete-user.input";
+import { UpdateRoleInput } from "../dto/update-role.input";
 import { UpdateUserInput } from "../dto/update-user.input";
 import { UserProjectSprintData } from "../dto/user-project-sprint-data.output";
 
@@ -57,6 +60,88 @@ export class UsersService {
 
   getRoles(): Promise<Role[]> {
     return this.roleRepository.find({ order: { name: "ASC" } });
+  }
+
+  async createRole(input: CreateRoleInput, actorId: string): Promise<Role> {
+    const name = this.resolveRoleName(input.name);
+
+    const existingRole = await this.roleRepository.findOne({
+      where: { name },
+    });
+    if (existingRole) {
+      throw new ConflictException("Role with this name already exists");
+    }
+
+    const role = await this.roleRepository.save(
+      this.roleRepository.create({ name }),
+    );
+
+    await this.auditService.log(AuditAction.CREATE_ROLE, actorId, {
+      roleId: role.id,
+      name: role.name,
+    });
+
+    return role;
+  }
+
+  async updateRole(input: UpdateRoleInput, actorId: string): Promise<Role> {
+    const role = await this.roleRepository.findOne({
+      where: { id: input.roleId },
+    });
+    if (!role) {
+      throw new NotFoundException("Role not found");
+    }
+
+    const name = this.resolveRoleName(input.name);
+
+    if (name === role.name) {
+      return role;
+    }
+
+    const existingRole = await this.roleRepository.findOne({
+      where: { name },
+    });
+    if (existingRole && existingRole.id !== role.id) {
+      throw new ConflictException("Role with this name already exists");
+    }
+
+    const previousName = role.name;
+    role.name = name;
+    const updatedRole = await this.roleRepository.save(role);
+
+    await this.auditService.log(AuditAction.UPDATE_ROLE, actorId, {
+      roleId: updatedRole.id,
+      previousName,
+      name: updatedRole.name,
+    });
+
+    return updatedRole;
+  }
+
+  async deleteRole(input: DeleteRoleInput, actorId: string): Promise<boolean> {
+    const role = await this.roleRepository.findOne({
+      where: { id: input.roleId },
+      relations: { users: true, questions: true },
+    });
+    if (!role) {
+      throw new NotFoundException("Role not found");
+    }
+
+    if (role.users?.length) {
+      throw new BadRequestException("Cannot delete a role assigned to users");
+    }
+
+    if (role.questions?.length) {
+      throw new BadRequestException("Cannot delete a role used by questions");
+    }
+
+    await this.roleRepository.remove(role);
+    await this.auditService.log(AuditAction.DELETE_ROLE, actorId, {
+      roleId: input.roleId,
+      name: role.name,
+    });
+
+    return true;
   }
 
   async getUserProjectSprintData(
@@ -310,6 +395,15 @@ export class UsersService {
     const resolvedName = (name ?? fullName)?.trim();
     if (!resolvedName) {
       throw new BadRequestException("User name is required");
+    }
+
+    return resolvedName;
+  }
+
+  private resolveRoleName(name: string): string {
+    const resolvedName = name.trim();
+    if (!resolvedName) {
+      throw new BadRequestException("Role name is required");
     }
 
     return resolvedName;
