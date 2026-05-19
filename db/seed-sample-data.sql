@@ -8,6 +8,18 @@ INSERT INTO roles (id, name) VALUES
   ('22222222-2222-2222-2222-222222222222', 'QA'),
   ('33333333-3333-3333-3333-333333333333', 'Manager');
 
+-- Sample admin login:
+-- email: admin@example.com
+-- password: Admin@123
+INSERT INTO admin_users (id, email, full_name, password_hash, is_active) VALUES
+  (
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    'admin@example.com',
+    'Admin User',
+    '$2b$10$GSHYEdyO2w3z.SRmwGpgLO8s.7JlldNOvQjnXKZs1rGBV7NogiLau',
+    true
+  );
+
 INSERT INTO users (id, email, name, is_active, role_id) VALUES
   ('aaaaaaaa-1111-1111-1111-111111111111', 'alice@example.com', 'Alice Johnson', true, '11111111-1111-1111-1111-111111111111'),
   ('bbbbbbbb-2222-2222-2222-222222222222', 'bob@example.com', 'Bob Smith', true, '11111111-1111-1111-1111-111111111111'),

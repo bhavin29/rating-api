@@ -23,6 +23,8 @@ DROP TABLE IF EXISTS sprints CASCADE;
 DROP TABLE IF EXISTS project_members CASCADE;
 DROP TABLE IF EXISTS projects CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS admin_sessions CASCADE;
+DROP TABLE IF EXISTS admin_users CASCADE;
 DROP TABLE IF EXISTS roles CASCADE;
 
 DROP TYPE IF EXISTS email_type_enum CASCADE;
@@ -64,6 +66,24 @@ CREATE TYPE audit_action_enum AS ENUM (
 CREATE TABLE roles (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name varchar NOT NULL UNIQUE
+);
+
+CREATE TABLE admin_users (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email varchar NOT NULL UNIQUE,
+  full_name varchar NOT NULL,
+  password_hash text NOT NULL,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE admin_sessions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  admin_user_id uuid NOT NULL REFERENCES admin_users(id) ON DELETE CASCADE,
+  token_hash text NOT NULL UNIQUE,
+  expires_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE TABLE users (
