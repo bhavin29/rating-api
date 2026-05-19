@@ -4,9 +4,12 @@ import { Role, User } from "../../database/entities";
 import { UserAuthGuard } from "../../auth/guards/user-auth.guard";
 import { RbacGuard } from "../../rbac/guards/rbac.guard";
 import { RequirePermissions } from "../../rbac/decorators/require-permissions.decorator";
+import { CreateRoleInput } from "../dto/create-role.input";
 import { CreateUserInput } from "../dto/create-user.input";
 import { CreateUserPayload } from "../dto/create-user.payload";
+import { DeleteRoleInput } from "../dto/delete-role.input";
 import { DeleteUserInput } from "../dto/delete-user.input";
+import { UpdateRoleInput } from "../dto/update-role.input";
 import { UpdateUserInput } from "../dto/update-user.input";
 import { UserProjectSprintDataArgs } from "../dto/user-project-sprint-data.args";
 import { UserProjectSprintData } from "../dto/user-project-sprint-data.output";
@@ -52,6 +55,15 @@ export class UsersResolver {
     return this.usersService.createUser(input, context.req.user.id);
   }
 
+  @Mutation(() => Role)
+  @RequirePermissions("user:create")
+  createRole(
+    @Args("input") input: CreateRoleInput,
+    @Context() context: any,
+  ): Promise<Role> {
+    return this.usersService.createRole(input, context.req.user.id);
+  }
+
   @Mutation(() => User)
   @RequirePermissions("user:update")
   updateUser(
@@ -59,6 +71,24 @@ export class UsersResolver {
     @Context() context: any,
   ): Promise<User> {
     return this.usersService.updateUser(input, context.req.user.id);
+  }
+
+  @Mutation(() => Role)
+  @RequirePermissions("user:update")
+  updateRole(
+    @Args("input") input: UpdateRoleInput,
+    @Context() context: any,
+  ): Promise<Role> {
+    return this.usersService.updateRole(input, context.req.user.id);
+  }
+
+  @Mutation(() => Boolean)
+  @RequirePermissions("user:delete")
+  deleteRole(
+    @Args("input") input: DeleteRoleInput,
+    @Context() context: any,
+  ): Promise<boolean> {
+    return this.usersService.deleteRole(input, context.req.user.id);
   }
 
   @Mutation(() => Boolean)
