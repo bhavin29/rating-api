@@ -2,6 +2,7 @@ import { UseGuards } from "@nestjs/common";
 import { Args, Context, Mutation, Query, Resolver } from "@nestjs/graphql";
 import { Role, User } from "../../database/entities";
 import { UserAuthGuard } from "../../auth/guards/user-auth.guard";
+import { SprintAuthGuard } from "../../../common/guards/sprint-auth.guard";
 import { RbacGuard } from "../../rbac/guards/rbac.guard";
 import { RequirePermissions } from "../../rbac/decorators/require-permissions.decorator";
 import { CreateRoleInput } from "../dto/create-role.input";
@@ -39,6 +40,7 @@ export class UsersResolver {
   }
 
   @Query(() => [UserProjectSprintData])
+  @UseGuards(SprintAuthGuard)
   @RequirePermissions("user:read")
   getUserProjectSprintData(
     @Args() args: UserProjectSprintDataArgs,
