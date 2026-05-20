@@ -10,6 +10,7 @@ import {
 import { AuthModule } from "../auth/auth.module";
 import { AuditModule } from "../audit/audit.module";
 import { RbacModule } from "../rbac/rbac.module";
+import { SprintAuthGuard } from "../../common/guards/sprint-auth.guard";
 import { UsersResolver } from "./resolvers/users.resolver";
 import { UsersService } from "./services/users.service";
 
@@ -20,7 +21,7 @@ import { UsersService } from "./services/users.service";
     AuthModule,
     RbacModule,
   ],
-  providers: [UsersResolver, UsersService],
+  providers: [UsersResolver, UsersService, SprintAuthGuard],
   exports: [UsersService],
 })
 export class UsersModule {}

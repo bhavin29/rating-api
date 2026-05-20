@@ -18,6 +18,7 @@ import { AuditModule } from "../audit/audit.module";
 import { AuthModule } from "../auth/auth.module";
 import { EmailModule } from "../email/email.module";
 import { RbacModule } from "../rbac/rbac.module";
+import { SprintAuthGuard } from "../../common/guards/sprint-auth.guard";
 
 @Module({
   imports: [
@@ -38,7 +39,7 @@ import { RbacModule } from "../rbac/rbac.module";
     EmailModule,
     AuditModule,
   ],
-  providers: [RatingsResolver, RatingsService],
+  providers: [RatingsResolver, RatingsService, SprintAuthGuard],
   exports: [RatingsService],
 })
 export class RatingsModule {}

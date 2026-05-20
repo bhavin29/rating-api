@@ -2,6 +2,7 @@ import { UseGuards } from "@nestjs/common";
 import { Args, Context, Mutation, Query, Resolver } from "@nestjs/graphql";
 import { Rating } from "../../database/entities";
 import { UserAuthGuard } from "../../auth/guards/user-auth.guard";
+import { SprintAuthGuard } from "../../../common/guards/sprint-auth.guard";
 import { RbacGuard } from "../../rbac/guards/rbac.guard";
 import { RequirePermissions } from "../../rbac/decorators/require-permissions.decorator";
 import { SubmitRatingInput } from "../dto/submit-rating.input";
@@ -27,6 +28,7 @@ export class RatingsResolver {
   }
 
   @Mutation(() => Rating)
+  @UseGuards(SprintAuthGuard)
   submitRating(@Args("input") input: SubmitRatingInput): Promise<Rating> {
     return this.ratingsService.submitRating(input);
   }
