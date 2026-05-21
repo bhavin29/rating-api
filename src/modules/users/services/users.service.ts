@@ -11,6 +11,7 @@ import { AuditAction } from "../../../common/enums";
 import { AuditService } from "../../audit/services/audit.service";
 import { Project, ProjectMember, Role, User } from "../../database/entities";
 import { generatePin } from "../../../common/security-pin.util";
+import { TtlCache } from "../../../common/ttl-cache";
 import { CreateRoleInput } from "../dto/create-role.input";
 import { CreateUserInput } from "../dto/create-user.input";
 import { CreateUserPayload } from "../dto/create-user.payload";
@@ -34,6 +35,8 @@ type UserProjectSprintDataRow = {
 
 @Injectable()
 export class UsersService {
+  private readonly rolesCache = new TtlCache<Promise<Role[]>>(60_000);
+
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(Role) private readonly roleRepository: Repository<Role>,
@@ -59,7 +62,15 @@ export class UsersService {
   }
 
   getRoles(): Promise<Role[]> {
-    return this.roleRepository.find({ order: { name: "ASC" } });
+    const cached = this.rolesCache.get("roles");
+    if (cached) {
+      return cached;
+    }
+
+    return this.rolesCache.set(
+      "roles",
+      this.roleRepository.find({ order: { name: "ASC" } }),
+    );
   }
 
   async createRole(input: CreateRoleInput, actorId: string): Promise<Role> {
@@ -75,6 +86,7 @@ export class UsersService {
     const role = await this.roleRepository.save(
       this.roleRepository.create({ name }),
     );
+    this.rolesCache.clear();
 
     await this.auditService.log(AuditAction.CREATE_ROLE, actorId, {
       roleId: role.id,
@@ -108,6 +120,7 @@ export class UsersService {
     const previousName = role.name;
     role.name = name;
     const updatedRole = await this.roleRepository.save(role);
+    this.rolesCache.clear();
 
     await this.auditService.log(AuditAction.UPDATE_ROLE, actorId, {
       roleId: updatedRole.id,
@@ -136,6 +149,7 @@ export class UsersService {
     }
 
     await this.roleRepository.remove(role);
+    this.rolesCache.clear();
     await this.auditService.log(AuditAction.DELETE_ROLE, actorId, {
       roleId: input.roleId,
       name: role.name,
