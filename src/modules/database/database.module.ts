@@ -53,6 +53,18 @@ import {
           ),
           logging: configService.get<boolean>("database.logging", false),
           ssl: sslEnabled ? { rejectUnauthorized: false } : false,
+          extra: {
+            max: configService.get<number>("database.poolMax", 20),
+            min: configService.get<number>("database.poolMin", 0),
+            idleTimeoutMillis: configService.get<number>(
+              "database.poolIdleTimeoutMillis",
+              30000,
+            ),
+            connectionTimeoutMillis: configService.get<number>(
+              "database.poolConnectionTimeoutMillis",
+              5000,
+            ),
+          },
           entities: [
             AdminSession,
             AdminUser,

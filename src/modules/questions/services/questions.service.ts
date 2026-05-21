@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { ILike, Repository } from "typeorm";
 import { AuditAction } from "../../../common/enums";
+import { TtlCache } from "../../../common/ttl-cache";
 import { AuditService } from "../../audit/services/audit.service";
 import { Project, Question, Role, Sprint } from "../../database/entities";
 import { CreateQuestionInput } from "../dto/create-question.input";
@@ -16,6 +17,8 @@ import { UpdateQuestionInput } from "../dto/update-question.input";
 
 @Injectable()
 export class QuestionsService {
+  private readonly questionsCache = new TtlCache<Promise<Question[]>>(30_000);
+
   constructor(
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
@@ -28,10 +31,19 @@ export class QuestionsService {
   ) {}
 
   getQuestionsByRole(roleId: string): Promise<Question[]> {
-    return this.questionRepository.find({
-      where: { roleId, isActive: true },
-      order: { text: "ASC" },
-    });
+    const cacheKey = `role:${roleId}`;
+    const cached = this.questionsCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    return this.questionsCache.set(
+      cacheKey,
+      this.questionRepository.find({
+        where: { roleId, isActive: true },
+        order: { text: "ASC" },
+      }),
+    );
   }
 
   getQuestions(args: QuestionsQueryArgs): Promise<Question[]> {
@@ -43,12 +55,29 @@ export class QuestionsService {
       ...(args.isActive !== undefined ? { isActive: args.isActive } : {}),
     };
 
-    return this.questionRepository.find({
-      where,
-      order: { text: "ASC" },
-      skip: args.skip,
-      take: args.take,
-    });
+    const cacheKey = `list:${JSON.stringify({
+      search: args.search?.trim() ?? null,
+      roleId: args.roleId ?? null,
+      projectId: args.projectId ?? null,
+      sprintId: args.sprintId ?? null,
+      isActive: args.isActive ?? null,
+      skip: args.skip ?? 0,
+      take: args.take ?? 20,
+    })}`;
+    const cached = this.questionsCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    return this.questionsCache.set(
+      cacheKey,
+      this.questionRepository.find({
+        where,
+        order: { text: "ASC" },
+        skip: args.skip,
+        take: args.take,
+      }),
+    );
   }
 
   async getQuestionById(id: string): Promise<Question> {
@@ -77,6 +106,7 @@ export class QuestionsService {
     });
 
     const createdQuestion = await this.questionRepository.save(question);
+    this.questionsCache.clear();
     await this.auditService.log(AuditAction.CREATE_QUESTION, actorId, {
       questionId: createdQuestion.id,
       roleId: createdQuestion.roleId,
@@ -116,6 +146,7 @@ export class QuestionsService {
     }
 
     const updatedQuestion = await this.questionRepository.save(question);
+    this.questionsCache.clear();
     await this.auditService.log(AuditAction.UPDATE_QUESTION, actorId, {
       questionId: updatedQuestion.id,
       roleId: updatedQuestion.roleId,
@@ -142,6 +173,7 @@ export class QuestionsService {
     }
 
     await this.questionRepository.remove(question);
+    this.questionsCache.clear();
     await this.auditService.log(AuditAction.DELETE_QUESTION, actorId, {
       questionId: id,
       roleId: question.roleId,
@@ -158,6 +190,7 @@ export class QuestionsService {
     const question = await this.getQuestionById(input.id);
     question.isActive = input.isActive;
     const updatedQuestion = await this.questionRepository.save(question);
+    this.questionsCache.clear();
     await this.auditService.log(AuditAction.TOGGLE_QUESTION_STATUS, actorId, {
       questionId: updatedQuestion.id,
       isActive: updatedQuestion.isActive,

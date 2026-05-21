@@ -15,7 +15,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "seed:security-pins": "ts-node scripts/seed-security-pins.ts"
+    "seed:security-pins": "ts-node scripts/seed-security-pins.ts",
+    "load:test": "powershell -ExecutionPolicy Bypass -File scripts/load/run-load-test.ps1",
+    "load:test:start": "powershell -ExecutionPolicy Bypass -File scripts/load/run-load-test.ps1 -StartServer"
   },
   "dependencies": {
     "@nestjs/apollo": "^12.2.2",
