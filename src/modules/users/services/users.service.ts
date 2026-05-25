@@ -501,13 +501,14 @@ export class UsersService {
     userId: string,
   ): Promise<void> {
     const existingMembership = await this.projectMemberRepository.findOne({
-      where: { projectId, userId },
+      where: { projectId, userId, roleId: IsNull() },
     });
     if (!existingMembership) {
       await this.projectMemberRepository.save(
         this.projectMemberRepository.create({
           projectId,
           userId,
+          roleId: null,
           isActive: true,
         }),
       );

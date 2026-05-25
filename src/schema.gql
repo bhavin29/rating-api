@@ -3,6 +3,7 @@
 # ------------------------------------------------------
 
 input AddProjectMembersInput {
+  allocationPercentage: Float
   projectId: String!
   roleId: String
   userIds: [String!]!
@@ -115,6 +116,7 @@ type Project {
 }
 
 type ProjectMember {
+  allocationPercentage: Float!
   id: ID!
   isActive: Boolean!
   role: Role
@@ -174,8 +176,7 @@ type RatingQuestion {
 }
 
 input RemoveProjectMemberInput {
-  projectId: String!
-  userId: String!
+  membershipId: String!
 }
 
 type Role {
@@ -236,10 +237,10 @@ input UpdateProjectInput {
 }
 
 input UpdateProjectMemberStatusInput {
+  allocationPercentage: Float
   isActive: Boolean
-  projectId: String!
+  membershipId: String!
   roleId: String
-  userId: String!
 }
 
 input UpdateQuestionInput {

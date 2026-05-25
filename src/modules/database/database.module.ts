@@ -4,6 +4,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import databaseConfig from "./database.config";
 import { UserRolesSkills1748000000000 } from "../../migrations/1748000000000-UserRolesSkills";
 import { SeedProjectManagerSkill1748100000000 } from "../../migrations/1748100000000-SeedProjectManagerSkill";
+import { ProjectMemberMultiRole1748200000000 } from "../../migrations/1748200000000-ProjectMemberMultiRole";
 import {
   AdminSession,
   AdminUser,
@@ -72,6 +73,7 @@ import {
           migrations: [
             UserRolesSkills1748000000000,
             SeedProjectManagerSkill1748100000000,
+            ProjectMemberMultiRole1748200000000,
           ],
           migrationsRun: true,
           entities: [

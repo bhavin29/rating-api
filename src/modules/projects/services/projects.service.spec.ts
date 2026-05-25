@@ -4,6 +4,7 @@ import { ProjectsService } from "./projects.service";
 
 describe("ProjectsService project member roles", () => {
   const projectId = "10000000-0000-0000-0000-000000000001";
+  const membershipId = "bbbbbbbb-1111-1111-1111-111111111111";
   const userId = "aaaaaaaa-1111-1111-1111-111111111111";
   const roleId = "11111111-1111-1111-1111-111111111111";
 
@@ -54,6 +55,7 @@ describe("ProjectsService project member roles", () => {
       userId,
       roleId,
       isActive: true,
+      allocationPercentage: 0,
     } as ProjectMember;
 
     projectRepository.findOne.mockResolvedValue({ id: projectId } as Project);
@@ -77,6 +79,7 @@ describe("ProjectsService project member roles", () => {
       userId,
       roleId,
       isActive: true,
+      allocationPercentage: 0,
     });
     expect(result).toEqual([savedMembership]);
   });
@@ -102,24 +105,25 @@ describe("ProjectsService project member roles", () => {
       userId,
       roleId: null,
       isActive: true,
+      allocationPercentage: 0,
     });
   });
 
   it("updates a project member role without requiring a status change", async () => {
     const {
       projectMemberRepository,
-      projectRepository,
       roleRepository,
       service,
     } = createService();
     const membership = {
+      id: membershipId,
       projectId,
       userId,
       roleId: null,
       isActive: true,
+      allocationPercentage: 0,
     } as ProjectMember;
 
-    projectRepository.findOne.mockResolvedValue({ id: projectId } as Project);
     projectMemberRepository.findOne.mockResolvedValue(membership);
     roleRepository.findOne.mockResolvedValue({ id: roleId } as Role);
     projectMemberRepository.save.mockImplementation((entity) =>
@@ -127,7 +131,7 @@ describe("ProjectsService project member roles", () => {
     );
 
     const result = await service.updateProjectMemberStatus(
-      { projectId, userId, roleId },
+      { membershipId, roleId },
       userId,
     );
 
@@ -138,25 +142,25 @@ describe("ProjectsService project member roles", () => {
   it("clears a project member role when roleId is null", async () => {
     const {
       projectMemberRepository,
-      projectRepository,
       roleRepository,
       service,
     } = createService();
     const membership = {
+      id: membershipId,
       projectId,
       userId,
       roleId,
       isActive: true,
+      allocationPercentage: 0,
     } as ProjectMember;
 
-    projectRepository.findOne.mockResolvedValue({ id: projectId } as Project);
     projectMemberRepository.findOne.mockResolvedValue(membership);
     projectMemberRepository.save.mockImplementation((entity) =>
       Promise.resolve(entity),
     );
 
     const result = await service.updateProjectMemberStatus(
-      { projectId, userId, roleId: null },
+      { membershipId, roleId: null },
       userId,
     );
 
@@ -165,12 +169,10 @@ describe("ProjectsService project member roles", () => {
   });
 
   it("rejects project member updates without changes", async () => {
-    const { projectRepository, service } = createService();
-
-    projectRepository.findOne.mockResolvedValue({ id: projectId } as Project);
+    const { service } = createService();
 
     await expect(
-      service.updateProjectMemberStatus({ projectId, userId }, userId),
+      service.updateProjectMemberStatus({ membershipId }, userId),
     ).rejects.toThrow(
       new BadRequestException("No project member changes provided"),
     );

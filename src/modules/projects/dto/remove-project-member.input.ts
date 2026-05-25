@@ -5,9 +5,5 @@ import { IsDbUuid } from '../../../common/validators/is-db-uuid.decorator';
 export class RemoveProjectMemberInput {
   @Field()
   @IsDbUuid()
-  projectId: string;
-
-  @Field()
-  @IsDbUuid()
-  userId: string;
+  membershipId: string;
 }
