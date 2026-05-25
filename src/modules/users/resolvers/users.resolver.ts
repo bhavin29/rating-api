@@ -1,6 +1,6 @@
 import { UseGuards } from "@nestjs/common";
 import { Args, Context, Mutation, Query, Resolver } from "@nestjs/graphql";
-import { Role, User } from "../../database/entities";
+import { Role, Skill, User } from "../../database/entities";
 import { UserAuthGuard } from "../../auth/guards/user-auth.guard";
 import { SprintAuthGuard } from "../../../common/guards/sprint-auth.guard";
 import { RbacGuard } from "../../rbac/guards/rbac.guard";
@@ -37,6 +37,12 @@ export class UsersResolver {
   @RequirePermissions("user:read")
   getRoles(): Promise<Role[]> {
     return this.usersService.getRoles();
+  }
+
+  @Query(() => [Skill])
+  @RequirePermissions("user:read")
+  getSkills(): Promise<Skill[]> {
+    return this.usersService.getSkills();
   }
 
   @Query(() => [UserProjectSprintData])

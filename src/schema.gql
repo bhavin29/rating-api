@@ -56,6 +56,7 @@ input CreateUserInput {
   name: String
   projectId: String
   roleId: String!
+  userRoles: [UserRoleInput!]
 }
 
 type CreateUserPayload {
@@ -69,6 +70,15 @@ input DeleteRoleInput {
 
 input DeleteUserInput {
   userId: String!
+}
+
+enum MemberLevel {
+  L1
+  L1_PLUS
+  L2
+  L2_PLUS
+  L3
+  L3_PLUS
 }
 
 type Mutation {
@@ -118,6 +128,7 @@ type Query {
   getProjects: [Project!]!
   getQuestionsByRole(roleId: String!): [Question!]!
   getRoles: [Role!]!
+  getSkills: [Skill!]!
   getSprintRatings(sprintId: String!): [SprintRatingOutput!]!
   getSprints(projectId: String!): [Sprint!]!
   getUser(userId: String!): User!
@@ -168,6 +179,11 @@ input RemoveProjectMemberInput {
 }
 
 type Role {
+  id: ID!
+  name: String!
+}
+
+type Skill {
   id: ID!
   name: String!
 }
@@ -265,6 +281,7 @@ input UpdateUserInput {
   name: String
   roleId: String
   userId: String!
+  userRoles: [UserRoleInput!]
 }
 
 type User {
@@ -275,6 +292,7 @@ type User {
   name: String!
   role: Role!
   roleId: String!
+  userRoles: [UserRole!]!
 }
 
 type UserProjectSprintData {
@@ -287,6 +305,19 @@ type UserProjectSprintData {
   sprintStartDate: String!
   userId: ID!
   userName: String!
+}
+
+type UserRole {
+  id: ID!
+  level: MemberLevel
+  role: Role!
+  skill: Skill
+}
+
+input UserRoleInput {
+  level: MemberLevel
+  roleId: String!
+  skillId: String
 }
 
 input ValidateTokenInput {

@@ -2,6 +2,8 @@ import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import databaseConfig from "./database.config";
+import { UserRolesSkills1748000000000 } from "../../migrations/1748000000000-UserRolesSkills";
+import { SeedProjectManagerSkill1748100000000 } from "../../migrations/1748100000000-SeedProjectManagerSkill";
 import {
   AdminSession,
   AdminUser,
@@ -17,8 +19,10 @@ import {
   RatingRequest,
   Role,
   SecureToken,
+  Skill,
   Sprint,
   User,
+  UserRole,
 } from "./entities";
 
 @Module({
@@ -65,11 +69,18 @@ import {
               5000,
             ),
           },
+          migrations: [
+            UserRolesSkills1748000000000,
+            SeedProjectManagerSkill1748100000000,
+          ],
+          migrationsRun: true,
           entities: [
             AdminSession,
             AdminUser,
             Role,
+            Skill,
             User,
+            UserRole,
             Project,
             ProjectMember,
             Sprint,

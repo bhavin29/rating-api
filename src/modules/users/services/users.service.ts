@@ -5,11 +5,11 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { DataSource, IsNull, Repository } from "typeorm";
+import { DataSource, In, IsNull, Repository } from "typeorm";
 import { compare, hash } from "bcryptjs";
 import { AuditAction } from "../../../common/enums";
 import { AuditService } from "../../audit/services/audit.service";
-import { Project, ProjectMember, Role, User } from "../../database/entities";
+import { Project, ProjectMember, Role, Skill, User, UserRole } from "../../database/entities";
 import { generatePin } from "../../../common/security-pin.util";
 import { TtlCache } from "../../../common/ttl-cache";
 import { CreateRoleInput } from "../dto/create-role.input";
@@ -19,6 +19,7 @@ import { DeleteRoleInput } from "../dto/delete-role.input";
 import { DeleteUserInput } from "../dto/delete-user.input";
 import { UpdateRoleInput } from "../dto/update-role.input";
 import { UpdateUserInput } from "../dto/update-user.input";
+import { UserRoleInput } from "../dto/user-role.input";
 import { UserProjectSprintData } from "../dto/user-project-sprint-data.output";
 
 type UserProjectSprintDataRow = {
@@ -45,11 +46,18 @@ export class UsersService {
     @InjectRepository(ProjectMember)
     private readonly projectMemberRepository: Repository<ProjectMember>,
     private readonly dataSource: DataSource,
+    @InjectRepository(UserRole)
+    private readonly userRoleRepository: Repository<UserRole>,
+    @InjectRepository(Skill)
+    private readonly skillRepository: Repository<Skill>,
     private readonly auditService: AuditService,
   ) {}
 
   getUsers(): Promise<User[]> {
-    return this.userRepository.find({ order: { fullName: "ASC" } });
+    return this.userRepository.find({
+      order: { fullName: "ASC" },
+      relations: { role: true, userRoles: { role: true, skill: true } },
+    });
   }
 
   async getUser(id: string): Promise<User> {
@@ -59,6 +67,10 @@ export class UsersService {
     }
 
     return user;
+  }
+
+  getSkills(): Promise<Skill[]> {
+    return this.skillRepository.find({ order: { name: 'ASC' } });
   }
 
   getRoles(): Promise<Role[]> {
@@ -182,6 +194,13 @@ export class UsersService {
   getById(id: string): Promise<User | null> {
     return this.userRepository.findOne({
       where: { id },
+      relations: { role: true, userRoles: { role: true, skill: true } },
+    });
+  }
+
+  private getByIdForMutation(id: string): Promise<User | null> {
+    return this.userRepository.findOne({
+      where: { id },
       relations: { role: true },
     });
   }
@@ -222,6 +241,10 @@ export class UsersService {
       }),
     );
 
+    if (input.userRoles?.length) {
+      await this.saveUserRoles(user.id, input.userRoles);
+    }
+
     if (input.projectId) {
       await this.ensureProjectExists(input.projectId);
       await this.addUserToProject(input.projectId, user.id);
@@ -246,50 +269,59 @@ export class UsersService {
   }
 
   async updateUser(input: UpdateUserInput, actorId: string): Promise<User> {
-    const user = await this.getById(input.userId);
+    const user = await this.getByIdForMutation(input.userId);
     if (!user) {
       throw new NotFoundException("User not found");
     }
 
-    const email =
-      input.email !== undefined ? this.normalizeEmail(input.email) : undefined;
+    const changes: Partial<User> = {};
 
-    if (email && email !== user.email) {
-      const existingUser = await this.userRepository.findOne({
-        where: { email },
-      });
-      if (existingUser) {
-        throw new ConflictException("User with this email already exists");
+    if (input.email !== undefined) {
+      const email = this.normalizeEmail(input.email);
+      if (email !== user.email) {
+        const existingUser = await this.userRepository.findOne({ where: { email } });
+        if (existingUser) {
+          throw new ConflictException("User with this email already exists");
+        }
+        changes.email = email;
       }
-      user.email = email;
     }
 
     if (input.fullName !== undefined || input.name !== undefined) {
-      user.fullName = this.resolveUserName(input.fullName, input.name);
+      changes.fullName = this.resolveUserName(input.fullName, input.name);
     }
 
     if (input.roleId) {
-      const role = await this.roleRepository.findOne({
-        where: { id: input.roleId },
-      });
+      const role = await this.roleRepository.findOne({ where: { id: input.roleId } });
       if (!role) {
         throw new NotFoundException("Role not found");
       }
-      user.roleId = input.roleId;
-      user.role = role;
+      changes.roleId = input.roleId;
     }
 
     if (input.isActive !== undefined) {
-      user.isActive = input.isActive;
+      changes.isActive = input.isActive;
     }
 
-    const updatedUser = await this.userRepository.save(user);
+    if (Object.keys(changes).length) {
+      await this.userRepository.update(user.id, changes);
+    }
+
+    if (input.userRoles !== undefined) {
+      await this.userRoleRepository.delete({ userId: user.id });
+      if (input.userRoles.length) {
+        await this.saveUserRoles(user.id, input.userRoles);
+      }
+    }
+
     await this.auditService.log(AuditAction.UPDATE_USER, actorId, {
-      userId: updatedUser.id,
-      roleId: updatedUser.roleId,
-      isActive: updatedUser.isActive,
+      userId: user.id,
+      roleId: changes.roleId ?? user.roleId,
+      isActive: changes.isActive ?? user.isActive,
     });
-    return updatedUser;
+
+    const updatedUser = await this.getById(user.id);
+    return updatedUser!;
   }
 
   async deleteUser(input: DeleteUserInput, actorId: string): Promise<boolean> {
@@ -430,6 +462,38 @@ export class UsersService {
     if (!project) {
       throw new NotFoundException("Project not found");
     }
+  }
+
+  private async saveUserRoles(
+    userId: string,
+    inputs: UserRoleInput[],
+  ): Promise<void> {
+    const roleIds = [...new Set(inputs.map((i) => i.roleId))];
+    const roles = await this.roleRepository.findBy({ id: In(roleIds) });
+    if (roles.length !== roleIds.length) {
+      throw new NotFoundException('One or more roles not found');
+    }
+
+    const skillIds = [
+      ...new Set(inputs.filter((i) => i.skillId).map((i) => i.skillId!)),
+    ];
+    if (skillIds.length) {
+      const skills = await this.skillRepository.findBy({ id: In(skillIds) });
+      if (skills.length !== skillIds.length) {
+        throw new NotFoundException('One or more skills not found');
+      }
+    }
+
+    await this.userRoleRepository.save(
+      inputs.map((input) =>
+        this.userRoleRepository.create({
+          userId,
+          roleId: input.roleId,
+          skillId: input.skillId ?? null,
+          level: input.level ?? null,
+        }),
+      ),
+    );
   }
 
   private async addUserToProject(

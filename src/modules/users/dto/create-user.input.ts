@@ -1,6 +1,8 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsEmail, IsOptional, IsString, MaxLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsEmail, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
 import { IsDbUuid } from '../../../common/validators/is-db-uuid.decorator';
+import { UserRoleInput } from './user-role.input';
 
 @InputType()
 export class CreateUserInput {
@@ -33,4 +35,11 @@ export class CreateUserInput {
   @IsOptional()
   @IsDbUuid()
   projectId?: string;
+
+  @Field(() => [UserRoleInput], { nullable: true })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserRoleInput)
+  userRoles?: UserRoleInput[];
 }

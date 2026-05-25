@@ -13,6 +13,7 @@ import { Rating } from "./rating.entity";
 import { AggregatedRating } from "./aggregated-rating.entity";
 import { OverallRating } from "./overall-rating.entity";
 import { SecureToken } from "./secure-token.entity";
+import { UserRole } from "./user-role.entity";
 
 @ObjectType()
 @Entity("users")
@@ -79,4 +80,8 @@ export class User {
 
   @OneToMany(() => SecureToken, (token) => token.user)
   secureTokens: SecureToken[];
+
+  @Field(() => [UserRole])
+  @OneToMany(() => UserRole, (ur) => ur.user)
+  userRoles: UserRole[];
 }

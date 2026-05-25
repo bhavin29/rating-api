@@ -12,5 +12,7 @@ export * from "./rating-request.entity";
 export * from "./rating.entity";
 export * from "./role.entity";
 export * from "./secure-token.entity";
+export * from "./skill.entity";
 export * from "./sprint.entity";
+export * from "./user-role.entity";
 export * from "./user.entity";
