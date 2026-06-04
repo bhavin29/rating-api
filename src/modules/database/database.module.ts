@@ -5,6 +5,10 @@ import databaseConfig from "./database.config";
 import { UserRolesSkills1748000000000 } from "../../migrations/1748000000000-UserRolesSkills";
 import { SeedProjectManagerSkill1748100000000 } from "../../migrations/1748100000000-SeedProjectManagerSkill";
 import { ProjectMemberMultiRole1748200000000 } from "../../migrations/1748200000000-ProjectMemberMultiRole";
+import { QuestionRoleTable1748900000000 } from "../../migrations/1748900000000-QuestionRoleTable";
+import { QuestionCategoryTable1748910000000 } from "../../migrations/1748910000000-QuestionCategoryTable";
+import { AddCategoryIdToQuestions1748920000000 } from "../../migrations/1748920000000-AddCategoryIdToQuestions";
+import { AddQuestionCategoryAuditActions1748930000000 } from "../../migrations/1748930000000-AddQuestionCategoryAuditActions";
 import {
   AdminSession,
   AdminUser,
@@ -15,6 +19,7 @@ import {
   Project,
   ProjectMember,
   Question,
+  QuestionCategory,
   Rating,
   RatingAnswer,
   RatingRequest,
@@ -74,6 +79,10 @@ import {
             UserRolesSkills1748000000000,
             SeedProjectManagerSkill1748100000000,
             ProjectMemberMultiRole1748200000000,
+            QuestionRoleTable1748900000000,
+            QuestionCategoryTable1748910000000,
+            AddCategoryIdToQuestions1748920000000,
+            AddQuestionCategoryAuditActions1748930000000,
           ],
           migrationsRun: true,
           entities: [
@@ -87,6 +96,7 @@ import {
             ProjectMember,
             Sprint,
             Question,
+            QuestionCategory,
             RatingRequest,
             Rating,
             RatingAnswer,

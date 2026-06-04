@@ -1,30 +1,14 @@
 import { ArgsType, Field, Int } from '@nestjs/graphql';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
-import { IsDbUuid } from '../../../common/validators/is-db-uuid.decorator';
 
 @ArgsType()
-export class QuestionsQueryArgs {
+export class QuestionCategoriesQueryArgs {
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
   @MaxLength(255)
   search?: string;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  @IsDbUuid()
-  categoryId?: string;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  @IsDbUuid()
-  projectId?: string;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  @IsDbUuid()
-  sprintId?: string;
 
   @Field({ nullable: true })
   @IsOptional()

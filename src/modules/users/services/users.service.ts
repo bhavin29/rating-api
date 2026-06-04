@@ -146,7 +146,7 @@ export class UsersService {
   async deleteRole(input: DeleteRoleInput, actorId: string): Promise<boolean> {
     const role = await this.roleRepository.findOne({
       where: { id: input.roleId },
-      relations: { users: true, questions: true },
+      relations: { users: true },
     });
     if (!role) {
       throw new NotFoundException("Role not found");
@@ -154,10 +154,6 @@ export class UsersService {
 
     if (role.users?.length) {
       throw new BadRequestException("Cannot delete a role assigned to users");
-    }
-
-    if (role.questions?.length) {
-      throw new BadRequestException("Cannot delete a role used by questions");
     }
 
     await this.roleRepository.remove(role);

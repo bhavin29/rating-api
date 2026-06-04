@@ -15,10 +15,10 @@ export class UpdateQuestionInput {
   @MaxLength(1000)
   text?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
   @IsDbUuid()
-  roleId?: string;
+  categoryId?: string | null;
 
   @Field(() => String, { nullable: true })
   @IsOptional()

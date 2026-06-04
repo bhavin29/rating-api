@@ -112,13 +112,6 @@ export class RatingsService {
     if (questions.length !== input.answers.length)
       throw new BadRequestException("Invalid question IDs");
 
-    const expectedRole = ratedUser.roleId;
-    const invalidQuestion = questions.find(
-      (question) => question.roleId !== expectedRole,
-    );
-    if (invalidQuestion)
-      throw new BadRequestException("Questions must match rated user role");
-
     const scores = input.answers.map((answer) => answer.score);
     const averageScore = Number(
       (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(

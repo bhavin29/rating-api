@@ -3,27 +3,22 @@ import { IsBoolean, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-va
 import { IsDbUuid } from '../../../common/validators/is-db-uuid.decorator';
 
 @InputType()
-export class CreateQuestionInput {
+export class UpdateQuestionCategoryInput {
   @Field()
+  @IsDbUuid()
+  id: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @MaxLength(1000)
-  text: string;
+  @MaxLength(255)
+  name?: string;
 
   @Field(() => String, { nullable: true })
   @IsOptional()
-  @IsDbUuid()
-  categoryId?: string | null;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  @IsDbUuid()
-  projectId?: string | null;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  @IsDbUuid()
-  sprintId?: string | null;
+  @IsString()
+  description?: string | null;
 
   @Field({ nullable: true })
   @IsOptional()

@@ -31,10 +31,16 @@ input CreateProjectInput {
   name: String!
 }
 
+input CreateQuestionCategoryInput {
+  description: String
+  isActive: Boolean
+  name: String!
+}
+
 input CreateQuestionInput {
+  categoryId: String
   isActive: Boolean
   projectId: String
-  roleId: String!
   sprintId: String
   text: String!
 }
@@ -88,20 +94,24 @@ type Mutation {
   assignProjectMembersToSprint(sprintId: String!): Boolean!
   createProject(input: CreateProjectInput!): Project!
   createQuestion(input: CreateQuestionInput!): Question!
+  createQuestionCategory(input: CreateQuestionCategoryInput!): QuestionCategory!
   createRole(input: CreateRoleInput!): Role!
   createSprint(input: CreateSprintInput!): Sprint!
   createUser(input: CreateUserInput!): CreateUserPayload!
   deleteQuestion(id: String!): Boolean!
+  deleteQuestionCategory(id: String!): Boolean!
   deleteRole(input: DeleteRoleInput!): Boolean!
   deleteUser(input: DeleteUserInput!): Boolean!
   generatePeerRatings(sprintId: String!): Boolean!
   removeProjectMember(input: RemoveProjectMemberInput!): Boolean!
   requestRating(sprintId: String!): Boolean!
   submitRating(input: SubmitRatingInput!): Rating!
+  toggleQuestionCategoryStatus(input: ToggleQuestionCategoryStatusInput!): QuestionCategory!
   toggleQuestionStatus(input: ToggleQuestionStatusInput!): Question!
   updateProject(input: UpdateProjectInput!): Project!
   updateProjectMemberStatus(input: UpdateProjectMemberStatusInput!): ProjectMember!
   updateQuestion(input: UpdateQuestionInput!): Question!
+  updateQuestionCategory(input: UpdateQuestionCategoryInput!): QuestionCategory!
   updateRole(input: UpdateRoleInput!): Role!
   updateSprint(input: UpdateSprintInput!): Sprint!
   updateSprintRatingRequests(input: [UpdateSprintRatingItemInput!]!): UpdateSprintRatingResponse!
@@ -128,7 +138,6 @@ type Query {
   generateSprintRatingRequest(spmId: String!): SprintRatingRequestOutput
   getProjectMembers(projectId: String!): [ProjectMember!]!
   getProjects: [Project!]!
-  getQuestionsByRole(roleId: String!): [Question!]!
   getRoles: [Role!]!
   getSkills: [Skill!]!
   getSprintRatings(sprintId: String!): [SprintRatingOutput!]!
@@ -137,18 +146,28 @@ type Query {
   getUserProjectSprintData(userId: String!): [UserProjectSprintData!]!
   getUsers: [User!]!
   question(id: String!): Question!
-  questions(isActive: Boolean, projectId: String, roleId: String, search: String, skip: Int = 0, sprintId: String, take: Int = 20): [Question!]!
+  questionCategories(isActive: Boolean, search: String, skip: Int = 0, take: Int = 20): [QuestionCategory!]!
+  questionCategory(id: String!): QuestionCategory!
+  questions(categoryId: String, isActive: Boolean, projectId: String, search: String, skip: Int = 0, sprintId: String, take: Int = 20): [Question!]!
 }
 
 type Question {
+  category: QuestionCategory
+  categoryId: String
   id: ID!
   isActive: Boolean!
   project: Project
   projectId: String
-  roleId: String!
   sprint: Sprint
   sprintId: String
   text: String!
+}
+
+type QuestionCategory {
+  description: String
+  id: ID!
+  isActive: Boolean!
+  name: String!
 }
 
 type Rating {
@@ -219,6 +238,11 @@ input SubmitRatingInput {
   token: String!
 }
 
+input ToggleQuestionCategoryStatusInput {
+  id: String!
+  isActive: Boolean!
+}
+
 input ToggleQuestionStatusInput {
   id: String!
   isActive: Boolean!
@@ -243,11 +267,18 @@ input UpdateProjectMemberStatusInput {
   roleId: String
 }
 
+input UpdateQuestionCategoryInput {
+  description: String
+  id: String!
+  isActive: Boolean
+  name: String
+}
+
 input UpdateQuestionInput {
+  categoryId: String
   id: String!
   isActive: Boolean
   projectId: String
-  roleId: String
   sprintId: String
   text: String
 }

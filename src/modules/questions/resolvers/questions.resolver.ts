@@ -17,12 +17,6 @@ export class QuestionsResolver {
 
   @Query(() => [Question])
   @RequirePermissions("question:read")
-  getQuestionsByRole(@Args("roleId") roleId: string): Promise<Question[]> {
-    return this.questionsService.getQuestionsByRole(roleId);
-  }
-
-  @Query(() => [Question])
-  @RequirePermissions("question:read")
   questions(@Args() args: QuestionsQueryArgs): Promise<Question[]> {
     return this.questionsService.getQuestions(args);
   }

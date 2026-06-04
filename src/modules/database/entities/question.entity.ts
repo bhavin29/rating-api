@@ -1,14 +1,14 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Project } from './project.entity';
-import { Role } from './role.entity';
+import { QuestionCategory } from './question-category.entity';
 import { Sprint } from './sprint.entity';
 import { RatingAnswer } from './rating-answer.entity';
 
 @ObjectType()
-@Index('idx_questions_role_id', ['roleId'])
 @Index('idx_questions_project_id', ['projectId'])
 @Index('idx_questions_sprint_id', ['sprintId'])
+@Index('idx_questions_category_id', ['categoryId'])
 @Index('idx_questions_is_active', ['isActive'])
 @Entity('questions')
 export class Question {
@@ -20,13 +20,14 @@ export class Question {
   @Column({ type: 'text', name: 'text' })
   text: string;
 
-  @ManyToOne(() => Role, (role) => role.questions, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'role_id' })
-  role: Role;
+  @Field(() => QuestionCategory, { nullable: true })
+  @ManyToOne(() => QuestionCategory, { eager: true, nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'category_id' })
+  category?: QuestionCategory | null;
 
-  @Field()
-  @Column({ name: 'role_id' })
-  roleId: string;
+  @Field(() => String, { nullable: true })
+  @Column({ name: 'category_id', nullable: true })
+  categoryId?: string | null;
 
   @Field(() => Project, { nullable: true })
   @ManyToOne(() => Project, (project) => project.questions, { eager: true, nullable: true, onDelete: 'SET NULL' })
