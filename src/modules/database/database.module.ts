@@ -9,6 +9,7 @@ import { QuestionRoleTable1748900000000 } from "../../migrations/1748900000000-Q
 import { QuestionCategoryTable1748910000000 } from "../../migrations/1748910000000-QuestionCategoryTable";
 import { AddCategoryIdToQuestions1748920000000 } from "../../migrations/1748920000000-AddCategoryIdToQuestions";
 import { AddQuestionCategoryAuditActions1748930000000 } from "../../migrations/1748930000000-AddQuestionCategoryAuditActions";
+import { AddQuestionRoleAuditActions1748940000000 } from "../../migrations/1748940000000-AddQuestionRoleAuditActions";
 import {
   AdminSession,
   AdminUser,
@@ -20,6 +21,7 @@ import {
   ProjectMember,
   Question,
   QuestionCategory,
+  QuestionRole,
   Rating,
   RatingAnswer,
   RatingRequest,
@@ -83,6 +85,7 @@ import {
             QuestionCategoryTable1748910000000,
             AddCategoryIdToQuestions1748920000000,
             AddQuestionCategoryAuditActions1748930000000,
+            AddQuestionRoleAuditActions1748940000000,
           ],
           migrationsRun: true,
           entities: [
@@ -97,6 +100,7 @@ import {
             Sprint,
             Question,
             QuestionCategory,
+            QuestionRole,
             RatingRequest,
             Rating,
             RatingAnswer,

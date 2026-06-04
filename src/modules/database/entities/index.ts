@@ -7,6 +7,7 @@ export * from "./overall-rating.entity";
 export * from "./project-member.entity";
 export * from "./project.entity";
 export * from "./question-category.entity";
+export * from "./question-role.entity";
 export * from "./question.entity";
 export * from "./rating-answer.entity";
 export * from "./rating-request.entity";
