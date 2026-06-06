@@ -31,6 +31,12 @@ input AssignQuestionsToRoleInput {
   roleId: String!
 }
 
+type CategoryRatingOutput {
+  averageRating: Float!
+  categoryId: String
+  categoryName: String
+}
+
 input CreateProjectInput {
   description: String
   name: String!
@@ -148,12 +154,14 @@ type Query {
   generateSprintRatingRequest(spmId: String!): SprintRatingRequestOutput
   getAssignedQuestions(roleId: String!): [QuestionRole!]!
   getAvailableQuestions(categoryId: String, roleId: String!, search: String): [Question!]!
+  getMySprintRatingSummary(categoryId: String, projectId: String, sprintId: String): [SprintRatingSummaryOutput!]!
   getProjectMembers(projectId: String!): [ProjectMember!]!
   getProjects: [Project!]!
   getQuestionCategoriesForAssignment: [QuestionCategory!]!
   getRoles: [Role!]!
   getRolesForQuestionAssignment: [Role!]!
   getSkills: [Skill!]!
+  getSprintRatingSummary(categoryId: String, projectId: String, sprintId: String, userId: String!): [SprintRatingSummaryOutput!]!
   getSprints: [Sprint!]!
   getUser(userId: String!): User!
   getUserProjectSprintData(userId: String!): [UserProjectSprintData!]!
@@ -245,6 +253,15 @@ type SprintRatingRequestOutput {
 enum SprintRatingStatus {
   DRAFT
   SUBMITTED
+}
+
+type SprintRatingSummaryOutput {
+  categories: [CategoryRatingOutput!]!
+  overallRating: Float!
+  projectId: String!
+  projectName: String!
+  sprintId: String!
+  sprintName: String!
 }
 
 input ToggleQuestionCategoryStatusInput {

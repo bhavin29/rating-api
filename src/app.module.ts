@@ -11,6 +11,7 @@ import { QuestionsModule } from './modules/questions/questions.module';
 import { QuestionCategoriesModule } from './modules/question-categories/question-categories.module';
 import { QuestionRolesModule } from './modules/question-roles/question-roles.module';
 import { RatingsModule } from './modules/ratings/ratings.module';
+import { RatingSummaryModule } from './modules/rating-summary/rating-summary.module';
 import { EmailModule } from './modules/email/email.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { RbacModule } from './modules/rbac/rbac.module';
@@ -43,6 +44,7 @@ import { DatabaseModule } from './modules/database/database.module';
     QuestionCategoriesModule,
     QuestionRolesModule,
     RatingsModule,
+    RatingSummaryModule,
     SprintFeedbackModule,
     EmailModule,
     AuditModule,
