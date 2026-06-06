@@ -42,7 +42,10 @@ export class RatingsResolver {
   @RequirePermissions("rating:read")
   generateSprintRatingRequest(
     @Args() args: GenerateSprintRatingRequestArgs,
+    @Context() context: any,
   ): Promise<SprintRatingRequestOutput | null> {
-    return this.ratingsService.generateSprintRatingRequest(args.spmId);
+    const user = context.req.user;
+    const isAdmin = (user?.role?.permissions ?? []).includes('*');
+    return this.ratingsService.generateSprintRatingRequest(args.spmId, user.id, isAdmin);
   }
 }

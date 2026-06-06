@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   Logger,
+  NotFoundException,
 } from "@nestjs/common";
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { DataSource, Repository } from "typeorm";
@@ -100,7 +102,20 @@ export class RatingsService {
 
   async generateSprintRatingRequest(
     spmId: string,
+    actorId: string,
+    isAdmin = false,
   ): Promise<SprintRatingRequestOutput | null> {
+    // Non-admin callers may only view their own assigned spm
+    if (!isAdmin && this.isUuid(actorId)) {
+      const rows = await this.dataSource.query(
+        `SELECT user_id FROM sprint_project_member WHERE id = $1`,
+        [spmId],
+      );
+      if (rows.length && rows[0].user_id !== actorId) {
+        throw new ForbiddenException('You are not the assigned rater for this sprint');
+      }
+    }
+
     try {
       const rows = await this.dataSource.query(
         `SELECT * FROM public.generate_sprint_rating_request($1)`,
@@ -150,6 +165,20 @@ export class RatingsService {
   }
 
   async submitSprintRating(spmId: string, actorId: string): Promise<boolean> {
+    // Verify caller is the rater assigned to this sprint_project_member
+    if (this.isUuid(actorId)) {
+      const rows = await this.dataSource.query(
+        `SELECT user_id FROM sprint_project_member WHERE id = $1`,
+        [spmId],
+      );
+      if (!rows.length) {
+        throw new NotFoundException('Sprint project member not found');
+      }
+      if (rows[0].user_id !== actorId) {
+        throw new ForbiddenException('You are not the assigned rater for this sprint');
+      }
+    }
+
     const existing = await this.spmStatusRepository.findOne({
       where: { spmId },
     });
@@ -175,6 +204,10 @@ export class RatingsService {
     });
 
     return true;
+  }
+
+  private isUuid(value: string): boolean {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
   }
 
   private toUuid(value: string): string | null {
