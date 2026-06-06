@@ -1,4 +1,4 @@
-import { Field, Float, ID, ObjectType } from '@nestjs/graphql';
+import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Rating } from './rating.entity';
 import { Question } from './question.entity';
@@ -25,7 +25,7 @@ export class RatingAnswer {
   @Column({ name: 'question_id' })
   questionId: string;
 
-  @Field(() => Float)
+  @Field(() => Int)
   @Column({ type: 'double precision' })
   score: number;
 }

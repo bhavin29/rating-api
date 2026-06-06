@@ -10,6 +10,7 @@ import {
   RatingAnswer,
   RatingRequest,
   Sprint,
+  SprintSpmStatus,
   User,
 } from "../database/entities";
 import { RatingsResolver } from "./resolvers/ratings.resolver";
@@ -33,6 +34,7 @@ import { SprintAuthGuard } from "../../common/guards/sprint-auth.guard";
       RatingRequest,
       AggregatedRating,
       OverallRating,
+      SprintSpmStatus,
     ]),
     AuthModule,
     RbacModule,

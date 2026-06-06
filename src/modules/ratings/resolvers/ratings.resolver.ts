@@ -47,6 +47,16 @@ export class RatingsResolver {
     );
   }
 
+  @Mutation(() => Boolean)
+  @UseGuards(UserAuthGuard, RbacGuard)
+  @RequirePermissions("rating:update")
+  submitSprintRating(
+    @Args("spmId") spmId: string,
+    @Context() context: any,
+  ): Promise<boolean> {
+    return this.ratingsService.submitSprintRating(spmId, context.req.user.id);
+  }
+
   @Query(() => [SprintRatingOutput])
   @UseGuards(UserAuthGuard, RbacGuard)
   @RequirePermissions("rating:read")

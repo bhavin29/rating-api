@@ -10,6 +10,8 @@ import { QuestionCategoryTable1748910000000 } from "../../migrations/17489100000
 import { AddCategoryIdToQuestions1748920000000 } from "../../migrations/1748920000000-AddCategoryIdToQuestions";
 import { AddQuestionCategoryAuditActions1748930000000 } from "../../migrations/1748930000000-AddQuestionCategoryAuditActions";
 import { AddQuestionRoleAuditActions1748940000000 } from "../../migrations/1748940000000-AddQuestionRoleAuditActions";
+import { AddSprintSpmStatusTable1748950000000 } from "../../migrations/1748950000000-AddSprintSpmStatusTable";
+import { AddSubmitSprintRatingAuditAction1748960000000 } from "../../migrations/1748960000000-AddSubmitSprintRatingAuditAction";
 import {
   AdminSession,
   AdminUser,
@@ -23,6 +25,7 @@ import {
   QuestionCategory,
   QuestionRole,
   Rating,
+  SprintSpmStatus,
   RatingAnswer,
   RatingRequest,
   Role,
@@ -86,6 +89,8 @@ import {
             AddCategoryIdToQuestions1748920000000,
             AddQuestionCategoryAuditActions1748930000000,
             AddQuestionRoleAuditActions1748940000000,
+            AddSprintSpmStatusTable1748950000000,
+            AddSubmitSprintRatingAuditAction1748960000000,
           ],
           migrationsRun: true,
           entities: [
@@ -103,6 +108,7 @@ import {
             QuestionRole,
             RatingRequest,
             Rating,
+            SprintSpmStatus,
             RatingAnswer,
             AggregatedRating,
             OverallRating,

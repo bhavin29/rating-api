@@ -118,6 +118,7 @@ type Mutation {
   removeQuestionFromRole(input: RemoveQuestionFromRoleInput!): Boolean!
   requestRating(sprintId: String!): Boolean!
   submitRating(input: SubmitRatingInput!): Rating!
+  submitSprintRating(spmId: String!): Boolean!
   toggleQuestionCategoryStatus(input: ToggleQuestionCategoryStatusInput!): QuestionCategory!
   toggleQuestionStatus(input: ToggleQuestionStatusInput!): Question!
   updateProject(input: UpdateProjectInput!): Project!
@@ -206,14 +207,14 @@ type Rating {
 
 input RatingAnswerInput {
   questionId: String!
-  score: Float!
+  score: Int!
 }
 
 type RatingQuestion {
   answer: String
   helperText: String
   id: String!
-  rating: Float
+  rating: Int
   ratingByUserId: String!
   ratingByUserName: String!
   ratingByUserRole: String!
@@ -260,6 +261,12 @@ type SprintRatingRequestOutput {
   ratedUserRole: String!
   spmId: String!
   sprintName: String!
+  status: SprintRatingStatus!
+}
+
+enum SprintRatingStatus {
+  DRAFT
+  SUBMITTED
 }
 
 input SubmitRatingInput {
@@ -329,7 +336,7 @@ input UpdateSprintInput {
 
 input UpdateSprintRatingItemInput {
   answer: String
-  rating: Float
+  rating: Int
   spr_id: String!
 }
 

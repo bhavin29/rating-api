@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { DataSource, EntityManager, In, Repository } from "typeorm";
-import { AuditAction, EmailStatus, EmailType } from "../../../common/enums";
+import { AuditAction, EmailStatus, EmailType, SprintRatingStatus } from "../../../common/enums";
 import {
   AggregatedRating,
   OverallRating,
@@ -16,6 +16,7 @@ import {
   RatingAnswer,
   RatingRequest,
   Sprint,
+  SprintSpmStatus,
   User,
 } from "../../database/entities";
 import { AuditService } from "../../audit/services/audit.service";
@@ -51,6 +52,8 @@ export class RatingsService {
     private readonly aggregatedRepository: Repository<AggregatedRating>,
     @InjectRepository(OverallRating)
     private readonly overallRepository: Repository<OverallRating>,
+    @InjectRepository(SprintSpmStatus)
+    private readonly spmStatusRepository: Repository<SprintSpmStatus>,
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly authService: AuthService,
     private readonly emailService: EmailService,
@@ -261,6 +264,42 @@ export class RatingsService {
     };
   }
 
+  async submitSprintRating(spmId: string, actorId: string): Promise<boolean> {
+    const existing = await this.spmStatusRepository.findOne({
+      where: { spmId },
+    });
+
+    if (existing) {
+      existing.status = SprintRatingStatus.SUBMITTED;
+      existing.submittedAt = new Date();
+      existing.submittedBy = this.toUuid(actorId);
+      await this.spmStatusRepository.save(existing);
+    } else {
+      await this.spmStatusRepository.save(
+        this.spmStatusRepository.create({
+          spmId,
+          status: SprintRatingStatus.SUBMITTED,
+          submittedAt: new Date(),
+          submittedBy: this.toUuid(actorId),
+        }),
+      );
+    }
+
+    await this.auditService.log(AuditAction.SUBMIT_SPRINT_RATING, actorId, {
+      spmId,
+    });
+
+    return true;
+  }
+
+  private toUuid(value: string): string | null {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      value,
+    )
+      ? value
+      : null;
+  }
+
   private async recomputeAggregates(
     manager: EntityManager,
     sprintId: string,
@@ -376,6 +415,10 @@ export class RatingsService {
         ratingByUserRole: row.rating_by_user_role,
       }));
 
+      const spmStatus = await this.spmStatusRepository.findOne({
+        where: { spmId },
+      });
+
       return {
         spmId,
         projectName: firstRow.project_name,
@@ -383,6 +426,7 @@ export class RatingsService {
         ratedUserName: firstRow.rated_user_name,
         ratedUserRole: firstRow.rated_user_role,
         questions,
+        status: spmStatus?.status ?? SprintRatingStatus.DRAFT,
       };
     } catch (error) {
       if (error instanceof Error) {
