@@ -16,8 +16,8 @@ export class SprintsResolver {
 
   @Query(() => [Sprint])
   @RequirePermissions("sprint:read")
-  getSprints(@Args("projectId") projectId: string): Promise<Sprint[]> {
-    return this.sprintsService.getSprints(projectId);
+  getSprints(): Promise<Sprint[]> {
+    return this.sprintsService.getSprints();
   }
 
   @Mutation(() => Sprint)

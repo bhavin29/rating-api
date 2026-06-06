@@ -1,9 +1,8 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Project } from './project.entity';
 import { QuestionCategory } from './question-category.entity';
 import { Sprint } from './sprint.entity';
-import { RatingAnswer } from './rating-answer.entity';
 
 @ObjectType()
 @Index('idx_questions_project_id', ['projectId'])
@@ -50,7 +49,4 @@ export class Question {
   @Field()
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
-
-  @OneToMany(() => RatingAnswer, (answer) => answer.question)
-  answers: RatingAnswer[];
 }

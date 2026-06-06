@@ -1,6 +1,5 @@
 export * from "./admin-session.entity";
 export * from "./admin-user.entity";
-export * from "./aggregated-rating.entity";
 export * from "./audit-log.entity";
 export * from "./email-log.entity";
 export * from "./overall-rating.entity";
@@ -9,9 +8,6 @@ export * from "./project.entity";
 export * from "./question-category.entity";
 export * from "./question-role.entity";
 export * from "./question.entity";
-export * from "./rating-answer.entity";
-export * from "./rating-request.entity";
-export * from "./rating.entity";
 export * from "./role.entity";
 export * from "./secure-token.entity";
 export * from "./skill.entity";

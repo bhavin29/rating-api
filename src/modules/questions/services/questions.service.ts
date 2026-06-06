@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ConflictException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -145,16 +144,9 @@ export class QuestionsService {
   async deleteQuestion(id: string, actorId: string): Promise<boolean> {
     const question = await this.questionRepository.findOne({
       where: { id },
-      relations: { answers: true },
     });
     if (!question) {
       throw new NotFoundException("Question not found");
-    }
-
-    if (question.answers.length > 0) {
-      throw new ConflictException(
-        "Question cannot be deleted because it is used in ratings",
-      );
     }
 
     await this.questionRepository.remove(question);

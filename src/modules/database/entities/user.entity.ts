@@ -9,8 +9,6 @@ import {
 } from "typeorm";
 import { Role } from "./role.entity";
 import { ProjectMember } from "./project-member.entity";
-import { Rating } from "./rating.entity";
-import { AggregatedRating } from "./aggregated-rating.entity";
 import { OverallRating } from "./overall-rating.entity";
 import { SecureToken } from "./secure-token.entity";
 import { UserRole } from "./user-role.entity";
@@ -65,15 +63,6 @@ export class User {
 
   @OneToMany(() => ProjectMember, (member) => member.user)
   projectMemberships: ProjectMember[];
-
-  @OneToMany(() => Rating, (rating) => rating.rater)
-  ratingsGiven: Rating[];
-
-  @OneToMany(() => Rating, (rating) => rating.ratedUser)
-  ratingsReceived: Rating[];
-
-  @OneToMany(() => AggregatedRating, (rating) => rating.user)
-  aggregatedRatings: AggregatedRating[];
 
   @OneToMany(() => OverallRating, (rating) => rating.user)
   overallRatings: OverallRating[];

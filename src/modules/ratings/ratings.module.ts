@@ -1,47 +1,20 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import {
-  AdminSession,
-  AggregatedRating,
-  OverallRating,
-  ProjectMember,
-  Question,
-  Rating,
-  RatingAnswer,
-  RatingRequest,
-  Sprint,
-  SprintSpmStatus,
-  User,
-} from "../database/entities";
+import { AdminSession, SprintSpmStatus } from "../database/entities";
 import { RatingsResolver } from "./resolvers/ratings.resolver";
 import { RatingsService } from "./services/ratings.service";
 import { AuditModule } from "../audit/audit.module";
 import { AuthModule } from "../auth/auth.module";
-import { EmailModule } from "../email/email.module";
 import { RbacModule } from "../rbac/rbac.module";
-import { SprintAuthGuard } from "../../common/guards/sprint-auth.guard";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      AdminSession,
-      Rating,
-      RatingAnswer,
-      Question,
-      User,
-      Sprint,
-      ProjectMember,
-      RatingRequest,
-      AggregatedRating,
-      OverallRating,
-      SprintSpmStatus,
-    ]),
+    TypeOrmModule.forFeature([AdminSession, SprintSpmStatus]),
     AuthModule,
     RbacModule,
-    EmailModule,
     AuditModule,
   ],
-  providers: [RatingsResolver, RatingsService, SprintAuthGuard],
+  providers: [RatingsResolver, RatingsService],
   exports: [RatingsService],
 })
 export class RatingsModule {}

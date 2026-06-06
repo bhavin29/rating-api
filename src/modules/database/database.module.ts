@@ -12,10 +12,10 @@ import { AddQuestionCategoryAuditActions1748930000000 } from "../../migrations/1
 import { AddQuestionRoleAuditActions1748940000000 } from "../../migrations/1748940000000-AddQuestionRoleAuditActions";
 import { AddSprintSpmStatusTable1748950000000 } from "../../migrations/1748950000000-AddSprintSpmStatusTable";
 import { AddSubmitSprintRatingAuditAction1748960000000 } from "../../migrations/1748960000000-AddSubmitSprintRatingAuditAction";
+import { DropSprintProjectId1748970000000 } from "../../migrations/1748970000000-DropSprintProjectId";
 import {
   AdminSession,
   AdminUser,
-  AggregatedRating,
   AuditLog,
   EmailLog,
   OverallRating,
@@ -24,14 +24,11 @@ import {
   Question,
   QuestionCategory,
   QuestionRole,
-  Rating,
-  SprintSpmStatus,
-  RatingAnswer,
-  RatingRequest,
   Role,
   SecureToken,
   Skill,
   Sprint,
+  SprintSpmStatus,
   User,
   UserRole,
 } from "./entities";
@@ -91,6 +88,7 @@ import {
             AddQuestionRoleAuditActions1748940000000,
             AddSprintSpmStatusTable1748950000000,
             AddSubmitSprintRatingAuditAction1748960000000,
+            DropSprintProjectId1748970000000,
           ],
           migrationsRun: true,
           entities: [
@@ -106,11 +104,7 @@ import {
             Question,
             QuestionCategory,
             QuestionRole,
-            RatingRequest,
-            Rating,
             SprintSpmStatus,
-            RatingAnswer,
-            AggregatedRating,
             OverallRating,
             EmailLog,
             SecureToken,

@@ -57,7 +57,6 @@ input CreateRoleInput {
 input CreateSprintInput {
   endDate: String!
   name: String!
-  projectId: String!
   startDate: String!
 }
 
@@ -116,8 +115,6 @@ type Mutation {
   generatePeerRatings(sprintId: String!): Boolean!
   removeProjectMember(input: RemoveProjectMemberInput!): Boolean!
   removeQuestionFromRole(input: RemoveQuestionFromRoleInput!): Boolean!
-  requestRating(sprintId: String!): Boolean!
-  submitRating(input: SubmitRatingInput!): Rating!
   submitSprintRating(spmId: String!): Boolean!
   toggleQuestionCategoryStatus(input: ToggleQuestionCategoryStatusInput!): QuestionCategory!
   toggleQuestionStatus(input: ToggleQuestionStatusInput!): Question!
@@ -157,8 +154,7 @@ type Query {
   getRoles: [Role!]!
   getRolesForQuestionAssignment: [Role!]!
   getSkills: [Skill!]!
-  getSprintRatings(sprintId: String!): [SprintRatingOutput!]!
-  getSprints(projectId: String!): [Sprint!]!
+  getSprints: [Sprint!]!
   getUser(userId: String!): User!
   getUserProjectSprintData(userId: String!): [UserProjectSprintData!]!
   getUsers: [User!]!
@@ -196,18 +192,6 @@ type QuestionRole {
   role: Role!
   updatedAt: DateTime!
   updatedBy: String
-}
-
-type Rating {
-  averageScore: Float!
-  id: ID!
-  ratedUser: User!
-  rater: User!
-}
-
-input RatingAnswerInput {
-  questionId: String!
-  score: Int!
 }
 
 type RatingQuestion {
@@ -248,12 +232,6 @@ type Sprint {
   startDate: String!
 }
 
-type SprintRatingOutput {
-  averageScore: Float!
-  userId: String!
-  userName: String!
-}
-
 type SprintRatingRequestOutput {
   projectName: String!
   questions: [RatingQuestion!]!
@@ -267,14 +245,6 @@ type SprintRatingRequestOutput {
 enum SprintRatingStatus {
   DRAFT
   SUBMITTED
-}
-
-input SubmitRatingInput {
-  answers: [RatingAnswerInput!]!
-  ratedUserId: String!
-  raterId: String!
-  sprintId: String!
-  token: String!
 }
 
 input ToggleQuestionCategoryStatusInput {
