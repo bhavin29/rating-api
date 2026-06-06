@@ -119,6 +119,7 @@ type Mutation {
   deleteRole(input: DeleteRoleInput!): Boolean!
   deleteUser(input: DeleteUserInput!): Boolean!
   generatePeerRatings(sprintId: String!): Boolean!
+  regenerateAllSecurityPins: [SecurityPinResult!]!
   removeProjectMember(input: RemoveProjectMemberInput!): Boolean!
   removeQuestionFromRole(input: RemoveQuestionFromRoleInput!): Boolean!
   submitSprintRating(spmId: String!): Boolean!
@@ -226,6 +227,11 @@ input RemoveQuestionFromRoleInput {
 type Role {
   id: ID!
   name: String!
+}
+
+type SecurityPinResult {
+  pin: String!
+  userId: String!
 }
 
 type Skill {

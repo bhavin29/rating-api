@@ -14,6 +14,7 @@ import { AddSprintSpmStatusTable1748950000000 } from "../../migrations/174895000
 import { AddSubmitSprintRatingAuditAction1748960000000 } from "../../migrations/1748960000000-AddSubmitSprintRatingAuditAction";
 import { DropSprintProjectId1748970000000 } from "../../migrations/1748970000000-DropSprintProjectId";
 import { AddSecurityCodeExpiresAt1748980000000 } from "../../migrations/1748980000000-AddSecurityCodeExpiresAt";
+import { ClearSecurityPins1748990000000 } from "../../migrations/1748990000000-ClearSecurityPins";
 import {
   AdminSession,
   AdminUser,
@@ -91,6 +92,7 @@ import {
             AddSubmitSprintRatingAuditAction1748960000000,
             DropSprintProjectId1748970000000,
             AddSecurityCodeExpiresAt1748980000000,
+            ClearSecurityPins1748990000000,
           ],
           migrationsRun: true,
           entities: [

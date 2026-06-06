@@ -14,6 +14,7 @@ import { UpdateRoleInput } from "../dto/update-role.input";
 import { UpdateUserInput } from "../dto/update-user.input";
 import { UserProjectSprintDataArgs } from "../dto/user-project-sprint-data.args";
 import { UserProjectSprintData } from "../dto/user-project-sprint-data.output";
+import { SecurityPinResult } from "../dto/security-pin-result.output";
 import { UsersService } from "../services/users.service";
 
 @Resolver(() => User)
@@ -106,5 +107,11 @@ export class UsersResolver {
     @Context() context: any,
   ): Promise<boolean> {
     return this.usersService.deleteUser(input, context.req.user.id);
+  }
+
+  @Mutation(() => [SecurityPinResult])
+  @RequirePermissions("user:update")
+  regenerateAllSecurityPins(): Promise<SecurityPinResult[]> {
+    return this.usersService.seedSecurityPinsForExistingUsers();
   }
 }
