@@ -10,7 +10,7 @@ import { compare, hash } from "bcryptjs";
 import { AuditAction } from "../../../common/enums";
 import { AuditService } from "../../audit/services/audit.service";
 import { Project, ProjectMember, Role, Skill, User, UserRole } from "../../database/entities";
-import { generatePin } from "../../../common/security-pin.util";
+import { generatePin, pinExpiresAt } from "../../../common/security-pin.util";
 import { TtlCache } from "../../../common/ttl-cache";
 import { CreateRoleInput } from "../dto/create-role.input";
 import { CreateUserInput } from "../dto/create-user.input";
@@ -234,6 +234,7 @@ export class UsersService {
         securityCodeHash,
         securityCodeEnabled: true,
         failedSecurityAttempts: 0,
+        securityCodeExpiresAt: pinExpiresAt(),
       }),
     );
 
@@ -348,6 +349,7 @@ export class UsersService {
       user.securityCodeEnabled = true;
       user.failedSecurityAttempts = 0;
       user.securityLockedUntil = null;
+      user.securityCodeExpiresAt = pinExpiresAt();
       await this.userRepository.save(user);
       await this.auditService.log(AuditAction.GENERATE_SECURITY_PIN, user.id, {
         userId: user.id,
@@ -374,6 +376,7 @@ export class UsersService {
     user.failedSecurityAttempts = 0;
     user.securityLockedUntil = null;
     user.lastSecurityVerifiedAt = null;
+    user.securityCodeExpiresAt = pinExpiresAt();
 
     const updatedUser = await this.userRepository.save(user);
     await this.auditService.log(
@@ -406,6 +409,12 @@ export class UsersService {
     if (user.securityLockedUntil && user.securityLockedUntil > now) {
       throw new BadRequestException(
         "Account is locked until " + user.securityLockedUntil.toISOString(),
+      );
+    }
+
+    if (user.securityCodeExpiresAt && user.securityCodeExpiresAt < now) {
+      throw new BadRequestException(
+        "Security PIN has expired. Please contact your administrator to generate a new one.",
       );
     }
 

@@ -61,6 +61,9 @@ export class User {
   @Column({ name: 'last_security_verified_at', type: 'timestamp', nullable: true })
   lastSecurityVerifiedAt: Date | null;
 
+  @Column({ name: 'security_code_expires_at', type: 'timestamp', nullable: true })
+  securityCodeExpiresAt: Date | null;
+
   @OneToMany(() => ProjectMember, (member) => member.user)
   projectMemberships: ProjectMember[];
 
