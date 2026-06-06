@@ -1,4 +1,4 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Field, Float, ID, ObjectType } from '@nestjs/graphql';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { Project } from './project.entity';
 import { Role } from './role.entity';
@@ -6,7 +6,7 @@ import { User } from './user.entity';
 
 @ObjectType()
 @Entity('project_members')
-@Unique('uq_project_member', ['projectId', 'userId'])
+@Unique('uq_project_member_role', ['projectId', 'userId', 'roleId'])
 export class ProjectMember {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
@@ -39,4 +39,8 @@ export class ProjectMember {
   @Field()
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
+
+  @Field(() => Float)
+  @Column({ name: 'allocation_percentage', type: 'numeric', precision: 5, scale: 2, default: 0 })
+  allocationPercentage: number;
 }

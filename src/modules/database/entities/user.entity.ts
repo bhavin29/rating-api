@@ -9,10 +9,9 @@ import {
 } from "typeorm";
 import { Role } from "./role.entity";
 import { ProjectMember } from "./project-member.entity";
-import { Rating } from "./rating.entity";
-import { AggregatedRating } from "./aggregated-rating.entity";
 import { OverallRating } from "./overall-rating.entity";
 import { SecureToken } from "./secure-token.entity";
+import { UserRole } from "./user-role.entity";
 
 @ObjectType()
 @Entity("users")
@@ -62,21 +61,19 @@ export class User {
   @Column({ name: 'last_security_verified_at', type: 'timestamp', nullable: true })
   lastSecurityVerifiedAt: Date | null;
 
+  @Column({ name: 'security_code_expires_at', type: 'timestamp', nullable: true })
+  securityCodeExpiresAt: Date | null;
+
   @OneToMany(() => ProjectMember, (member) => member.user)
   projectMemberships: ProjectMember[];
-
-  @OneToMany(() => Rating, (rating) => rating.rater)
-  ratingsGiven: Rating[];
-
-  @OneToMany(() => Rating, (rating) => rating.ratedUser)
-  ratingsReceived: Rating[];
-
-  @OneToMany(() => AggregatedRating, (rating) => rating.user)
-  aggregatedRatings: AggregatedRating[];
 
   @OneToMany(() => OverallRating, (rating) => rating.user)
   overallRatings: OverallRating[];
 
   @OneToMany(() => SecureToken, (token) => token.user)
   secureTokens: SecureToken[];
+
+  @Field(() => [UserRole])
+  @OneToMany(() => UserRole, (ur) => ur.user)
+  userRoles: UserRole[];
 }

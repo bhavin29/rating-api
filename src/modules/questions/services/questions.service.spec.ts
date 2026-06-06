@@ -1,10 +1,9 @@
 import { NotFoundException } from "@nestjs/common";
-import { Project, Question, Role, Sprint } from "../../database/entities";
+import { Project, Question, Sprint } from "../../database/entities";
 import { QuestionsService } from "./questions.service";
 
 describe("QuestionsService project and sprint associations", () => {
   const questionId = "50000000-0000-0000-0000-000000000001";
-  const roleId = "11111111-1111-1111-1111-111111111111";
   const projectId = "10000000-0000-0000-0000-000000000001";
   const sprintId = "30000000-0000-0000-0000-000000000001";
   const actorId = "dddddddd-4444-4444-4444-444444444444";
@@ -19,14 +18,12 @@ describe("QuestionsService project and sprint associations", () => {
 
   const createService = () => {
     const questionRepository = createRepository();
-    const roleRepository = createRepository();
     const projectRepository = createRepository();
     const sprintRepository = createRepository();
     const auditService = { log: jest.fn() };
 
     const service = new QuestionsService(
       questionRepository as any,
-      roleRepository as any,
       projectRepository as any,
       sprintRepository as any,
       auditService as any,
@@ -36,29 +33,21 @@ describe("QuestionsService project and sprint associations", () => {
       auditService,
       projectRepository,
       questionRepository,
-      roleRepository,
       service,
       sprintRepository,
     };
   };
 
   it("creates a question with project and sprint associations", async () => {
-    const {
-      projectRepository,
-      questionRepository,
-      roleRepository,
-      service,
-      sprintRepository,
-    } = createService();
+    const { projectRepository, questionRepository, service, sprintRepository } =
+      createService();
 
-    roleRepository.findOne.mockResolvedValue({ id: roleId } as Role);
     projectRepository.findOne.mockResolvedValue({ id: projectId } as Project);
     sprintRepository.findOne.mockResolvedValue({ id: sprintId } as Sprint);
 
     await service.createQuestion(
       {
         text: "How well did this sprint go?",
-        roleId,
         projectId,
         sprintId,
       },
@@ -67,7 +56,6 @@ describe("QuestionsService project and sprint associations", () => {
 
     expect(questionRepository.create).toHaveBeenCalledWith({
       text: "How well did this sprint go?",
-      roleId,
       projectId,
       sprintId,
       isActive: true,
@@ -75,20 +63,12 @@ describe("QuestionsService project and sprint associations", () => {
   });
 
   it("creates a question without optional project and sprint associations", async () => {
-    const {
-      projectRepository,
-      questionRepository,
-      roleRepository,
-      service,
-      sprintRepository,
-    } = createService();
-
-    roleRepository.findOne.mockResolvedValue({ id: roleId } as Role);
+    const { projectRepository, questionRepository, service, sprintRepository } =
+      createService();
 
     await service.createQuestion(
       {
-        text: "General role question",
-        roleId,
+        text: "General question",
       },
       actorId,
     );
@@ -96,8 +76,7 @@ describe("QuestionsService project and sprint associations", () => {
     expect(projectRepository.findOne).not.toHaveBeenCalled();
     expect(sprintRepository.findOne).not.toHaveBeenCalled();
     expect(questionRepository.create).toHaveBeenCalledWith({
-      text: "General role question",
-      roleId,
+      text: "General question",
       projectId: null,
       sprintId: null,
       isActive: true,
@@ -105,17 +84,11 @@ describe("QuestionsService project and sprint associations", () => {
   });
 
   it("updates project and sprint associations", async () => {
-    const {
-      projectRepository,
-      questionRepository,
-      roleRepository,
-      service,
-      sprintRepository,
-    } = createService();
+    const { projectRepository, questionRepository, service, sprintRepository } =
+      createService();
     const question = {
       id: questionId,
       text: "Question",
-      roleId,
       projectId: null,
       sprintId: null,
     } as Question;
@@ -123,7 +96,6 @@ describe("QuestionsService project and sprint associations", () => {
     questionRepository.findOne.mockResolvedValue(question);
     projectRepository.findOne.mockResolvedValue({ id: projectId } as Project);
     sprintRepository.findOne.mockResolvedValue({ id: sprintId } as Sprint);
-    roleRepository.findOne.mockResolvedValue({ id: roleId } as Role);
 
     const result = await service.updateQuestion(
       { id: questionId, projectId, sprintId },
@@ -140,7 +112,6 @@ describe("QuestionsService project and sprint associations", () => {
     const question = {
       id: questionId,
       text: "Question",
-      roleId,
       projectId,
       sprintId,
     } as Question;
@@ -172,29 +143,23 @@ describe("QuestionsService project and sprint associations", () => {
   });
 
   it("rejects an invalid project id", async () => {
-    const { projectRepository, roleRepository, service } = createService();
+    const { projectRepository, service } = createService();
 
-    roleRepository.findOne.mockResolvedValue({ id: roleId } as Role);
     projectRepository.findOne.mockResolvedValue(null);
 
     await expect(
-      service.createQuestion({ text: "Question", roleId, projectId }, actorId),
+      service.createQuestion({ text: "Question", projectId }, actorId),
     ).rejects.toThrow(new NotFoundException("Project not found"));
   });
 
   it("rejects an invalid sprint id", async () => {
-    const { projectRepository, roleRepository, service, sprintRepository } =
-      createService();
+    const { projectRepository, service, sprintRepository } = createService();
 
-    roleRepository.findOne.mockResolvedValue({ id: roleId } as Role);
     projectRepository.findOne.mockResolvedValue({ id: projectId } as Project);
     sprintRepository.findOne.mockResolvedValue(null);
 
     await expect(
-      service.createQuestion(
-        { text: "Question", roleId, projectId, sprintId },
-        actorId,
-      ),
+      service.createQuestion({ text: "Question", projectId, sprintId }, actorId),
     ).rejects.toThrow(new NotFoundException("Sprint not found"));
   });
 });

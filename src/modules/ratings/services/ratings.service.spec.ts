@@ -11,20 +11,11 @@ describe("RatingsService updateSprintRatingRequests", () => {
         .mockImplementation(async (work) => work({ query: queryMock })),
     } as any;
     const auditService = { log: jest.fn() };
+    const spmStatusRepository = { findOne: jest.fn(), save: jest.fn(), create: jest.fn() };
 
     const service = new RatingsService(
-      null as any,
-      null as any,
-      null as any,
-      null as any,
-      null as any,
-      null as any,
-      null as any,
-      null as any,
-      null as any,
+      spmStatusRepository as any,
       dataSource,
-      null as any,
-      null as any,
       auditService as any,
     );
 
@@ -70,7 +61,7 @@ describe("RatingsService updateSprintRatingRequests", () => {
     const updates: UpdateSprintRatingItemInput[] = [
       {
         sprId: "50000000-0000-0000-0000-000000000001",
-        rating: 8.5,
+        rating: 8,
         answer: "Good contribution",
       },
       {
@@ -99,7 +90,7 @@ describe("RatingsService updateSprintRatingRequests", () => {
         JSON.stringify([
           {
             spr_id: "50000000-0000-0000-0000-000000000001",
-            rating: 8.5,
+            rating: 8,
             answer: "Good contribution",
           },
           {

@@ -1,6 +1,6 @@
 import { UseGuards } from "@nestjs/common";
 import { Args, Context, Mutation, Query, Resolver } from "@nestjs/graphql";
-import { Role, User } from "../../database/entities";
+import { Role, Skill, User } from "../../database/entities";
 import { UserAuthGuard } from "../../auth/guards/user-auth.guard";
 import { SprintAuthGuard } from "../../../common/guards/sprint-auth.guard";
 import { RbacGuard } from "../../rbac/guards/rbac.guard";
@@ -14,6 +14,7 @@ import { UpdateRoleInput } from "../dto/update-role.input";
 import { UpdateUserInput } from "../dto/update-user.input";
 import { UserProjectSprintDataArgs } from "../dto/user-project-sprint-data.args";
 import { UserProjectSprintData } from "../dto/user-project-sprint-data.output";
+import { SecurityPinResult } from "../dto/security-pin-result.output";
 import { UsersService } from "../services/users.service";
 
 @Resolver(() => User)
@@ -37,6 +38,12 @@ export class UsersResolver {
   @RequirePermissions("user:read")
   getRoles(): Promise<Role[]> {
     return this.usersService.getRoles();
+  }
+
+  @Query(() => [Skill])
+  @RequirePermissions("user:read")
+  getSkills(): Promise<Skill[]> {
+    return this.usersService.getSkills();
   }
 
   @Query(() => [UserProjectSprintData])
@@ -100,5 +107,11 @@ export class UsersResolver {
     @Context() context: any,
   ): Promise<boolean> {
     return this.usersService.deleteUser(input, context.req.user.id);
+  }
+
+  @Mutation(() => [SecurityPinResult])
+  @RequirePermissions("user:update")
+  regenerateAllSecurityPins(): Promise<SecurityPinResult[]> {
+    return this.usersService.seedSecurityPinsForExistingUsers();
   }
 }

@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash } from 'crypto';
@@ -33,8 +33,13 @@ export class UserAuthGuard implements CanActivate {
       }
     }
 
-    req.user = req.user ?? { id: 'auth-disabled', role: { permissions: ['*'] } };
-    return true;
+    // Dev-only bypass: only active when AUTH_DISABLED=true AND not in production
+    if (process.env.AUTH_DISABLED === 'true' && process.env.NODE_ENV !== 'production') {
+      req.user = req.user ?? { id: 'auth-disabled', role: { permissions: ['*'] } };
+      return true;
+    }
+
+    throw new UnauthorizedException('Authentication required');
   }
 
   private getBearerToken(authorization?: string): string | null {

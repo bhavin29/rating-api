@@ -1,5 +1,6 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
+import { AdminHttpGuard } from '../../auth/guards/admin-http.guard';
 import { SendSprintFeedbackEmailInput } from '../dto/send-sprint-feedback-email.input';
 import { VerifySprintFeedbackPinInput } from '../dto/verify-sprint-feedback-pin.input';
 import { SprintFeedbackService } from '../services/sprint-feedback.service';
@@ -9,6 +10,7 @@ export class SprintFeedbackController {
   constructor(private readonly sprintFeedbackService: SprintFeedbackService) {}
 
   @Post('send-email')
+  @UseGuards(AdminHttpGuard)
   sendEmail(@Body() input: SendSprintFeedbackEmailInput): Promise<{ ok: true }> {
     return this.sprintFeedbackService.sendEmail(input.userId);
   }

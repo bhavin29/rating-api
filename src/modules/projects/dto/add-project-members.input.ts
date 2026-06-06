@@ -1,5 +1,5 @@
-import { Field, InputType } from '@nestjs/graphql';
-import { ArrayNotEmpty, IsArray, IsOptional, Matches } from 'class-validator';
+import { Field, Float, InputType } from '@nestjs/graphql';
+import { ArrayNotEmpty, IsArray, IsNumber, IsOptional, Matches, Max, Min } from 'class-validator';
 import { IsDbUuid } from '../../../common/validators/is-db-uuid.decorator';
 
 const DB_UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -20,4 +20,11 @@ export class AddProjectMembersInput {
   @IsOptional()
   @IsDbUuid()
   roleId?: string | null;
+
+  @Field(() => Float, { nullable: true })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  allocationPercentage?: number;
 }

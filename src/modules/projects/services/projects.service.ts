@@ -86,16 +86,20 @@ export class ProjectsService {
     const existing = await this.projectMemberRepository.find({
       where: { projectId: input.projectId },
     });
-    const existingUserIds = new Set(existing.map((member) => member.userId));
+    const roleKey = input.roleId ?? null;
+    const existingKeys = new Set(
+      existing.map((m) => `${m.userId}:${m.roleId ?? 'null'}`),
+    );
 
     const toInsert = input.userIds
-      .filter((userId) => !existingUserIds.has(userId))
+      .filter((userId) => !existingKeys.has(`${userId}:${roleKey ?? 'null'}`))
       .map((userId) =>
         this.projectMemberRepository.create({
           projectId: input.projectId,
           userId,
-          roleId: input.roleId ?? null,
+          roleId: roleKey,
           isActive: true,
+          allocationPercentage: input.allocationPercentage ?? 0,
         }),
       );
 
@@ -104,7 +108,7 @@ export class ProjectsService {
       await this.auditService.log(AuditAction.ADD_PROJECT_MEMBERS, actorId, {
         projectId: input.projectId,
         userIds: toInsert.map((member) => member.userId),
-        roleId: input.roleId ?? null,
+        roleId: roleKey,
       });
     }
 
@@ -115,15 +119,17 @@ export class ProjectsService {
     input: UpdateProjectMemberStatusInput,
     actorId: string,
   ): Promise<ProjectMember> {
-    await this.ensureProjectExists(input.projectId);
-    if (input.isActive === undefined && input.roleId === undefined) {
+    if (
+      input.isActive === undefined &&
+      input.roleId === undefined &&
+      input.allocationPercentage === undefined
+    ) {
       throw new BadRequestException("No project member changes provided");
     }
 
     const membership = await this.projectMemberRepository.findOne({
-      where: { projectId: input.projectId, userId: input.userId },
+      where: { id: input.membershipId },
     });
-
     if (!membership) {
       throw new NotFoundException("Project member not found");
     }
@@ -139,11 +145,15 @@ export class ProjectsService {
       membership.isActive = input.isActive;
     }
 
-    const updatedMembership =
-      await this.projectMemberRepository.save(membership);
+    if (input.allocationPercentage !== undefined) {
+      membership.allocationPercentage = input.allocationPercentage;
+    }
+
+    const updatedMembership = await this.projectMemberRepository.save(membership);
     await this.auditService.log(AuditAction.UPDATE_PROJECT_MEMBER, actorId, {
-      projectId: input.projectId,
-      userId: input.userId,
+      membershipId: updatedMembership.id,
+      projectId: updatedMembership.projectId,
+      userId: updatedMembership.userId,
       roleId: updatedMembership.roleId,
       isActive: updatedMembership.isActive,
     });
@@ -154,20 +164,18 @@ export class ProjectsService {
     input: RemoveProjectMemberInput,
     actorId: string,
   ): Promise<boolean> {
-    await this.ensureProjectExists(input.projectId);
-
     const membership = await this.projectMemberRepository.findOne({
-      where: { projectId: input.projectId, userId: input.userId },
+      where: { id: input.membershipId },
     });
-
     if (!membership) {
       throw new NotFoundException("Project member not found");
     }
 
     await this.projectMemberRepository.remove(membership);
     await this.auditService.log(AuditAction.REMOVE_PROJECT_MEMBER, actorId, {
-      projectId: input.projectId,
-      userId: input.userId,
+      membershipId: input.membershipId,
+      projectId: membership.projectId,
+      userId: membership.userId,
       roleId: membership.roleId,
     });
     return true;

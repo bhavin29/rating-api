@@ -3,6 +3,7 @@
 # ------------------------------------------------------
 
 input AddProjectMembersInput {
+  allocationPercentage: Float
   projectId: String!
   roleId: String
   userIds: [String!]!
@@ -25,15 +26,32 @@ type AdminUser {
   isActive: Boolean!
 }
 
+input AssignQuestionsToRoleInput {
+  questionIds: [String!]!
+  roleId: String!
+}
+
+type CategoryRatingOutput {
+  averageRating: Float!
+  categoryId: String
+  categoryName: String
+}
+
 input CreateProjectInput {
   description: String
   name: String!
 }
 
+input CreateQuestionCategoryInput {
+  description: String
+  isActive: Boolean
+  name: String!
+}
+
 input CreateQuestionInput {
+  categoryId: String
   isActive: Boolean
   projectId: String
-  roleId: String!
   sprintId: String
   text: String!
 }
@@ -45,7 +63,6 @@ input CreateRoleInput {
 input CreateSprintInput {
   endDate: String!
   name: String!
-  projectId: String!
   startDate: String!
 }
 
@@ -56,12 +73,18 @@ input CreateUserInput {
   name: String
   projectId: String
   roleId: String!
+  userRoles: [UserRoleInput!]
 }
 
 type CreateUserPayload {
   plainPin: String!
   user: User!
 }
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
 
 input DeleteRoleInput {
   roleId: String!
@@ -71,26 +94,41 @@ input DeleteUserInput {
   userId: String!
 }
 
+enum MemberLevel {
+  L1
+  L1_PLUS
+  L2
+  L2_PLUS
+  L3
+  L3_PLUS
+}
+
 type Mutation {
   addProjectMembers(input: AddProjectMembersInput!): [ProjectMember!]!
   adminLogin(input: AdminLoginInput!): AdminLoginPayload!
   assignProjectMembersToSprint(sprintId: String!): Boolean!
+  assignQuestionsToRole(input: AssignQuestionsToRoleInput!): Boolean!
   createProject(input: CreateProjectInput!): Project!
   createQuestion(input: CreateQuestionInput!): Question!
+  createQuestionCategory(input: CreateQuestionCategoryInput!): QuestionCategory!
   createRole(input: CreateRoleInput!): Role!
   createSprint(input: CreateSprintInput!): Sprint!
   createUser(input: CreateUserInput!): CreateUserPayload!
   deleteQuestion(id: String!): Boolean!
+  deleteQuestionCategory(id: String!): Boolean!
   deleteRole(input: DeleteRoleInput!): Boolean!
   deleteUser(input: DeleteUserInput!): Boolean!
   generatePeerRatings(sprintId: String!): Boolean!
+  regenerateAllSecurityPins: [SecurityPinResult!]!
   removeProjectMember(input: RemoveProjectMemberInput!): Boolean!
-  requestRating(sprintId: String!): Boolean!
-  submitRating(input: SubmitRatingInput!): Rating!
+  removeQuestionFromRole(input: RemoveQuestionFromRoleInput!): Boolean!
+  submitSprintRating(spmId: String!): Boolean!
+  toggleQuestionCategoryStatus(input: ToggleQuestionCategoryStatusInput!): QuestionCategory!
   toggleQuestionStatus(input: ToggleQuestionStatusInput!): Question!
   updateProject(input: UpdateProjectInput!): Project!
   updateProjectMemberStatus(input: UpdateProjectMemberStatusInput!): ProjectMember!
   updateQuestion(input: UpdateQuestionInput!): Question!
+  updateQuestionCategory(input: UpdateQuestionCategoryInput!): QuestionCategory!
   updateRole(input: UpdateRoleInput!): Role!
   updateSprint(input: UpdateSprintInput!): Sprint!
   updateSprintRatingRequests(input: [UpdateSprintRatingItemInput!]!): UpdateSprintRatingResponse!
@@ -105,6 +143,7 @@ type Project {
 }
 
 type ProjectMember {
+  allocationPercentage: Float!
   id: ID!
   isActive: Boolean!
   role: Role
@@ -114,47 +153,61 @@ type ProjectMember {
 
 type Query {
   generateSprintRatingRequest(spmId: String!): SprintRatingRequestOutput
+  getAssignedQuestions(roleId: String!): [QuestionRole!]!
+  getAvailableQuestions(categoryId: String, roleId: String!, search: String): [Question!]!
+  getMySprintRatingSummary(categoryId: String, projectId: String, sprintId: String): [SprintRatingSummaryOutput!]!
   getProjectMembers(projectId: String!): [ProjectMember!]!
   getProjects: [Project!]!
-  getQuestionsByRole(roleId: String!): [Question!]!
+  getQuestionCategoriesForAssignment: [QuestionCategory!]!
   getRoles: [Role!]!
-  getSprintRatings(sprintId: String!): [SprintRatingOutput!]!
-  getSprints(projectId: String!): [Sprint!]!
+  getRolesForQuestionAssignment: [Role!]!
+  getSkills: [Skill!]!
+  getSprintRatingSummary(categoryId: String, projectId: String, sprintId: String, userId: String!): [SprintRatingSummaryOutput!]!
+  getSprints: [Sprint!]!
   getUser(userId: String!): User!
   getUserProjectSprintData(userId: String!): [UserProjectSprintData!]!
   getUsers: [User!]!
   question(id: String!): Question!
-  questions(isActive: Boolean, projectId: String, roleId: String, search: String, skip: Int = 0, sprintId: String, take: Int = 20): [Question!]!
+  questionCategories(isActive: Boolean, search: String, skip: Int = 0, take: Int = 20): [QuestionCategory!]!
+  questionCategory(id: String!): QuestionCategory!
+  questions(categoryId: String, isActive: Boolean, projectId: String, search: String, skip: Int = 0, sprintId: String, take: Int = 20): [Question!]!
 }
 
 type Question {
+  category: QuestionCategory
+  categoryId: String
   id: ID!
   isActive: Boolean!
   project: Project
   projectId: String
-  roleId: String!
   sprint: Sprint
   sprintId: String
   text: String!
 }
 
-type Rating {
-  averageScore: Float!
+type QuestionCategory {
+  description: String
   id: ID!
-  ratedUser: User!
-  rater: User!
+  isActive: Boolean!
+  name: String!
 }
 
-input RatingAnswerInput {
-  questionId: String!
-  score: Float!
+type QuestionRole {
+  createdAt: DateTime!
+  createdBy: String
+  id: ID!
+  isActive: Boolean!
+  question: Question!
+  role: Role!
+  updatedAt: DateTime!
+  updatedBy: String
 }
 
 type RatingQuestion {
   answer: String
   helperText: String
   id: String!
-  rating: Float
+  rating: Int
   ratingByUserId: String!
   ratingByUserName: String!
   ratingByUserRole: String!
@@ -163,11 +216,25 @@ type RatingQuestion {
 }
 
 input RemoveProjectMemberInput {
-  projectId: String!
-  userId: String!
+  membershipId: String!
+}
+
+input RemoveQuestionFromRoleInput {
+  questionId: String!
+  roleId: String!
 }
 
 type Role {
+  id: ID!
+  name: String!
+}
+
+type SecurityPinResult {
+  pin: String!
+  userId: String!
+}
+
+type Skill {
   id: ID!
   name: String!
 }
@@ -179,12 +246,6 @@ type Sprint {
   startDate: String!
 }
 
-type SprintRatingOutput {
-  averageScore: Float!
-  userId: String!
-  userName: String!
-}
-
 type SprintRatingRequestOutput {
   projectName: String!
   questions: [RatingQuestion!]!
@@ -192,14 +253,26 @@ type SprintRatingRequestOutput {
   ratedUserRole: String!
   spmId: String!
   sprintName: String!
+  status: SprintRatingStatus!
 }
 
-input SubmitRatingInput {
-  answers: [RatingAnswerInput!]!
-  ratedUserId: String!
-  raterId: String!
+enum SprintRatingStatus {
+  DRAFT
+  SUBMITTED
+}
+
+type SprintRatingSummaryOutput {
+  categories: [CategoryRatingOutput!]!
+  overallRating: Float!
+  projectId: String!
+  projectName: String!
   sprintId: String!
-  token: String!
+  sprintName: String!
+}
+
+input ToggleQuestionCategoryStatusInput {
+  id: String!
+  isActive: Boolean!
 }
 
 input ToggleQuestionStatusInput {
@@ -220,17 +293,24 @@ input UpdateProjectInput {
 }
 
 input UpdateProjectMemberStatusInput {
+  allocationPercentage: Float
   isActive: Boolean
-  projectId: String!
+  membershipId: String!
   roleId: String
-  userId: String!
+}
+
+input UpdateQuestionCategoryInput {
+  description: String
+  id: String!
+  isActive: Boolean
+  name: String
 }
 
 input UpdateQuestionInput {
+  categoryId: String
   id: String!
   isActive: Boolean
   projectId: String
-  roleId: String
   sprintId: String
   text: String
 }
@@ -249,7 +329,7 @@ input UpdateSprintInput {
 
 input UpdateSprintRatingItemInput {
   answer: String
-  rating: Float
+  rating: Int
   spr_id: String!
 }
 
@@ -265,6 +345,7 @@ input UpdateUserInput {
   name: String
   roleId: String
   userId: String!
+  userRoles: [UserRoleInput!]
 }
 
 type User {
@@ -275,6 +356,7 @@ type User {
   name: String!
   role: Role!
   roleId: String!
+  userRoles: [UserRole!]!
 }
 
 type UserProjectSprintData {
@@ -287,6 +369,19 @@ type UserProjectSprintData {
   sprintStartDate: String!
   userId: ID!
   userName: String!
+}
+
+type UserRole {
+  id: ID!
+  level: MemberLevel
+  role: Role!
+  skill: Skill
+}
+
+input UserRoleInput {
+  level: MemberLevel
+  roleId: String!
+  skillId: String
 }
 
 input ValidateTokenInput {

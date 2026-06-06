@@ -11,10 +11,10 @@ export class QuestionsQueryArgs {
   @MaxLength(255)
   search?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
   @IsDbUuid()
-  roleId?: string;
+  categoryId?: string;
 
   @Field(() => String, { nullable: true })
   @IsOptional()

@@ -1,4 +1,7 @@
-import { Field, Float, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { SprintRatingStatus } from '../../../common/enums';
+
+registerEnumType(SprintRatingStatus, { name: 'SprintRatingStatus' });
 
 @ObjectType()
 export class RatingQuestion {
@@ -11,7 +14,7 @@ export class RatingQuestion {
   @Field()
   text: string;
 
-  @Field(() => Float, { nullable: true })
+  @Field(() => Int, { nullable: true })
   rating?: number;
 
   @Field({ nullable: true })
@@ -49,4 +52,7 @@ export class SprintRatingRequestOutput {
 
   @Field(() => [RatingQuestion])
   questions: RatingQuestion[];
+
+  @Field(() => SprintRatingStatus)
+  status: SprintRatingStatus;
 }

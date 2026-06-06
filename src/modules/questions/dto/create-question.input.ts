@@ -10,9 +10,10 @@ export class CreateQuestionInput {
   @MaxLength(1000)
   text: string;
 
-  @Field()
+  @Field(() => String, { nullable: true })
+  @IsOptional()
   @IsDbUuid()
-  roleId: string;
+  categoryId?: string | null;
 
   @Field(() => String, { nullable: true })
   @IsOptional()

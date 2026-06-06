@@ -5,7 +5,9 @@ import {
   Project,
   ProjectMember,
   Role,
+  Skill,
   User,
+  UserRole,
 } from "../database/entities";
 import { AuthModule } from "../auth/auth.module";
 import { AuditModule } from "../audit/audit.module";
@@ -16,7 +18,7 @@ import { UsersService } from "./services/users.service";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AdminSession, User, Role, Project, ProjectMember]),
+    TypeOrmModule.forFeature([AdminSession, User, Role, Skill, UserRole, Project, ProjectMember]),
     AuditModule,
     AuthModule,
     RbacModule,

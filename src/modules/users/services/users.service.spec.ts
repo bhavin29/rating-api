@@ -30,6 +30,8 @@ describe("UsersService roles", () => {
       {} as any,
       {} as any,
       {} as any,
+      {} as any,
+      {} as any,
       auditService as any,
     );
 

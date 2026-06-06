@@ -1,7 +1,6 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from './user.entity';
-import { Question } from './question.entity';
 import { ProjectMember } from './project-member.entity';
 
 @ObjectType()
@@ -17,9 +16,6 @@ export class Role {
 
   @OneToMany(() => User, (user) => user.role)
   users: User[];
-
-  @OneToMany(() => Question, (question) => question.role)
-  questions: Question[];
 
   @OneToMany(() => ProjectMember, (member) => member.role)
   projectMemberships: ProjectMember[];

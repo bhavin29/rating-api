@@ -1,14 +1,10 @@
 import { UseGuards } from "@nestjs/common";
 import { Args, Context, Mutation, Query, Resolver } from "@nestjs/graphql";
-import { Rating } from "../../database/entities";
 import { UserAuthGuard } from "../../auth/guards/user-auth.guard";
-import { SprintAuthGuard } from "../../../common/guards/sprint-auth.guard";
 import { RbacGuard } from "../../rbac/guards/rbac.guard";
 import { RequirePermissions } from "../../rbac/decorators/require-permissions.decorator";
-import { SubmitRatingInput } from "../dto/submit-rating.input";
 import { UpdateSprintRatingItemInput } from "../dto/update-sprint-rating.input";
 import { UpdateSprintRatingResponse } from "../dto/update-sprint-rating.response";
-import { SprintRatingOutput } from "../dto/sprint-rating.output";
 import { SprintRatingRequestOutput } from "../dto/sprint-rating-request.output";
 import { GenerateSprintRatingRequestArgs } from "../dto/generate-sprint-rating-request.input";
 import { RatingsService } from "../services/ratings.service";
@@ -16,22 +12,6 @@ import { RatingsService } from "../services/ratings.service";
 @Resolver()
 export class RatingsResolver {
   constructor(private readonly ratingsService: RatingsService) {}
-
-  @Mutation(() => Boolean)
-  @UseGuards(UserAuthGuard, RbacGuard)
-  @RequirePermissions("rating:request")
-  requestRating(
-    @Args("sprintId") sprintId: string,
-    @Context() context: any,
-  ): Promise<boolean> {
-    return this.ratingsService.requestRating(sprintId, context.req.user.id);
-  }
-
-  @Mutation(() => Rating)
-  @UseGuards(SprintAuthGuard)
-  submitRating(@Args("input") input: SubmitRatingInput): Promise<Rating> {
-    return this.ratingsService.submitRating(input);
-  }
 
   @Mutation(() => UpdateSprintRatingResponse)
   @UseGuards(UserAuthGuard, RbacGuard)
@@ -47,13 +27,14 @@ export class RatingsResolver {
     );
   }
 
-  @Query(() => [SprintRatingOutput])
+  @Mutation(() => Boolean)
   @UseGuards(UserAuthGuard, RbacGuard)
-  @RequirePermissions("rating:read")
-  getSprintRatings(
-    @Args("sprintId") sprintId: string,
-  ): Promise<SprintRatingOutput[]> {
-    return this.ratingsService.getSprintRatings(sprintId);
+  @RequirePermissions("rating:update")
+  submitSprintRating(
+    @Args("spmId") spmId: string,
+    @Context() context: any,
+  ): Promise<boolean> {
+    return this.ratingsService.submitSprintRating(spmId, context.req.user.id);
   }
 
   @Query(() => SprintRatingRequestOutput, { nullable: true })
@@ -61,7 +42,10 @@ export class RatingsResolver {
   @RequirePermissions("rating:read")
   generateSprintRatingRequest(
     @Args() args: GenerateSprintRatingRequestArgs,
+    @Context() context: any,
   ): Promise<SprintRatingRequestOutput | null> {
-    return this.ratingsService.generateSprintRatingRequest(args.spmId);
+    const user = context.req.user;
+    const isAdmin = (user?.role?.permissions ?? []).includes('*');
+    return this.ratingsService.generateSprintRatingRequest(args.spmId, user.id, isAdmin);
   }
 }

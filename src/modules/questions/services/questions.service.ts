@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ConflictException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -9,7 +8,7 @@ import { ILike, Repository } from "typeorm";
 import { AuditAction } from "../../../common/enums";
 import { TtlCache } from "../../../common/ttl-cache";
 import { AuditService } from "../../audit/services/audit.service";
-import { Project, Question, Role, Sprint } from "../../database/entities";
+import { Project, Question, QuestionCategory, Sprint } from "../../database/entities";
 import { CreateQuestionInput } from "../dto/create-question.input";
 import { QuestionsQueryArgs } from "../dto/questions-query.args";
 import { ToggleQuestionStatusInput } from "../dto/toggle-question-status.input";
@@ -22,7 +21,8 @@ export class QuestionsService {
   constructor(
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
-    @InjectRepository(Role) private readonly roleRepository: Repository<Role>,
+    @InjectRepository(QuestionCategory)
+    private readonly categoryRepository: Repository<QuestionCategory>,
     @InjectRepository(Project)
     private readonly projectRepository: Repository<Project>,
     @InjectRepository(Sprint)
@@ -30,26 +30,10 @@ export class QuestionsService {
     private readonly auditService: AuditService,
   ) {}
 
-  getQuestionsByRole(roleId: string): Promise<Question[]> {
-    const cacheKey = `role:${roleId}`;
-    const cached = this.questionsCache.get(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
-    return this.questionsCache.set(
-      cacheKey,
-      this.questionRepository.find({
-        where: { roleId, isActive: true },
-        order: { text: "ASC" },
-      }),
-    );
-  }
-
   getQuestions(args: QuestionsQueryArgs): Promise<Question[]> {
     const where = {
       ...(args.search ? { text: ILike(`%${args.search.trim()}%`) } : {}),
-      ...(args.roleId ? { roleId: args.roleId } : {}),
+      ...(args.categoryId ? { categoryId: args.categoryId } : {}),
       ...(args.projectId ? { projectId: args.projectId } : {}),
       ...(args.sprintId ? { sprintId: args.sprintId } : {}),
       ...(args.isActive !== undefined ? { isActive: args.isActive } : {}),
@@ -57,7 +41,7 @@ export class QuestionsService {
 
     const cacheKey = `list:${JSON.stringify({
       search: args.search?.trim() ?? null,
-      roleId: args.roleId ?? null,
+      categoryId: args.categoryId ?? null,
       projectId: args.projectId ?? null,
       sprintId: args.sprintId ?? null,
       isActive: args.isActive ?? null,
@@ -93,13 +77,13 @@ export class QuestionsService {
     input: CreateQuestionInput,
     actorId: string,
   ): Promise<Question> {
-    await this.ensureRoleExists(input.roleId);
+    await this.ensureCategoryExists(input.categoryId);
     await this.ensureProjectExists(input.projectId);
     await this.ensureSprintExists(input.sprintId);
 
     const question = this.questionRepository.create({
       text: this.normalizeQuestionText(input.text),
-      roleId: input.roleId,
+      categoryId: input.categoryId ?? null,
       projectId: input.projectId ?? null,
       sprintId: input.sprintId ?? null,
       isActive: input.isActive ?? true,
@@ -109,7 +93,7 @@ export class QuestionsService {
     this.questionsCache.clear();
     await this.auditService.log(AuditAction.CREATE_QUESTION, actorId, {
       questionId: createdQuestion.id,
-      roleId: createdQuestion.roleId,
+      categoryId: createdQuestion.categoryId,
       projectId: createdQuestion.projectId,
       sprintId: createdQuestion.sprintId,
     });
@@ -122,9 +106,9 @@ export class QuestionsService {
   ): Promise<Question> {
     const question = await this.getQuestionById(input.id);
 
-    if (input.roleId !== undefined) {
-      await this.ensureRoleExists(input.roleId);
-      question.roleId = input.roleId;
+    if (input.categoryId !== undefined) {
+      await this.ensureCategoryExists(input.categoryId);
+      question.categoryId = input.categoryId;
     }
 
     if (input.projectId !== undefined) {
@@ -149,7 +133,7 @@ export class QuestionsService {
     this.questionsCache.clear();
     await this.auditService.log(AuditAction.UPDATE_QUESTION, actorId, {
       questionId: updatedQuestion.id,
-      roleId: updatedQuestion.roleId,
+      categoryId: updatedQuestion.categoryId,
       projectId: updatedQuestion.projectId,
       sprintId: updatedQuestion.sprintId,
       isActive: updatedQuestion.isActive,
@@ -160,23 +144,15 @@ export class QuestionsService {
   async deleteQuestion(id: string, actorId: string): Promise<boolean> {
     const question = await this.questionRepository.findOne({
       where: { id },
-      relations: { answers: true },
     });
     if (!question) {
       throw new NotFoundException("Question not found");
-    }
-
-    if (question.answers.length > 0) {
-      throw new ConflictException(
-        "Question cannot be deleted because it is used in ratings",
-      );
     }
 
     await this.questionRepository.remove(question);
     this.questionsCache.clear();
     await this.auditService.log(AuditAction.DELETE_QUESTION, actorId, {
       questionId: id,
-      roleId: question.roleId,
       projectId: question.projectId,
       sprintId: question.sprintId,
     });
@@ -198,10 +174,18 @@ export class QuestionsService {
     return updatedQuestion;
   }
 
-  private async ensureRoleExists(roleId: string): Promise<void> {
-    const role = await this.roleRepository.findOne({ where: { id: roleId } });
-    if (!role) {
-      throw new NotFoundException("Role not found");
+  private async ensureCategoryExists(
+    categoryId?: string | null,
+  ): Promise<void> {
+    if (categoryId == null) {
+      return;
+    }
+
+    const category = await this.categoryRepository.findOne({
+      where: { id: categoryId },
+    });
+    if (!category) {
+      throw new NotFoundException("Question category not found");
     }
   }
 

@@ -2,23 +2,37 @@ import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import databaseConfig from "./database.config";
+import { UserRolesSkills1748000000000 } from "../../migrations/1748000000000-UserRolesSkills";
+import { SeedProjectManagerSkill1748100000000 } from "../../migrations/1748100000000-SeedProjectManagerSkill";
+import { ProjectMemberMultiRole1748200000000 } from "../../migrations/1748200000000-ProjectMemberMultiRole";
+import { QuestionRoleTable1748900000000 } from "../../migrations/1748900000000-QuestionRoleTable";
+import { QuestionCategoryTable1748910000000 } from "../../migrations/1748910000000-QuestionCategoryTable";
+import { AddCategoryIdToQuestions1748920000000 } from "../../migrations/1748920000000-AddCategoryIdToQuestions";
+import { AddQuestionCategoryAuditActions1748930000000 } from "../../migrations/1748930000000-AddQuestionCategoryAuditActions";
+import { AddQuestionRoleAuditActions1748940000000 } from "../../migrations/1748940000000-AddQuestionRoleAuditActions";
+import { AddSprintSpmStatusTable1748950000000 } from "../../migrations/1748950000000-AddSprintSpmStatusTable";
+import { AddSubmitSprintRatingAuditAction1748960000000 } from "../../migrations/1748960000000-AddSubmitSprintRatingAuditAction";
+import { DropSprintProjectId1748970000000 } from "../../migrations/1748970000000-DropSprintProjectId";
+import { AddSecurityCodeExpiresAt1748980000000 } from "../../migrations/1748980000000-AddSecurityCodeExpiresAt";
+import { ClearSecurityPins1748990000000 } from "../../migrations/1748990000000-ClearSecurityPins";
 import {
   AdminSession,
   AdminUser,
-  AggregatedRating,
   AuditLog,
   EmailLog,
   OverallRating,
   Project,
   ProjectMember,
   Question,
-  Rating,
-  RatingAnswer,
-  RatingRequest,
+  QuestionCategory,
+  QuestionRole,
   Role,
   SecureToken,
+  Skill,
   Sprint,
+  SprintSpmStatus,
   User,
+  UserRole,
 } from "./entities";
 
 @Module({
@@ -65,19 +79,36 @@ import {
               5000,
             ),
           },
+          migrations: [
+            UserRolesSkills1748000000000,
+            SeedProjectManagerSkill1748100000000,
+            ProjectMemberMultiRole1748200000000,
+            QuestionRoleTable1748900000000,
+            QuestionCategoryTable1748910000000,
+            AddCategoryIdToQuestions1748920000000,
+            AddQuestionCategoryAuditActions1748930000000,
+            AddQuestionRoleAuditActions1748940000000,
+            AddSprintSpmStatusTable1748950000000,
+            AddSubmitSprintRatingAuditAction1748960000000,
+            DropSprintProjectId1748970000000,
+            AddSecurityCodeExpiresAt1748980000000,
+            ClearSecurityPins1748990000000,
+          ],
+          migrationsRun: true,
           entities: [
             AdminSession,
             AdminUser,
             Role,
+            Skill,
             User,
+            UserRole,
             Project,
             ProjectMember,
             Sprint,
             Question,
-            RatingRequest,
-            Rating,
-            RatingAnswer,
-            AggregatedRating,
+            QuestionCategory,
+            QuestionRole,
+            SprintSpmStatus,
             OverallRating,
             EmailLog,
             SecureToken,
